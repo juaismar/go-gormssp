@@ -452,7 +452,7 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 
 func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) string {
 	switch searching {
-	case "string", "TEXT", "varchar", "VARCHAR":
+	case "string", "TEXT", "varchar", "VARCHAR", "text":
 		if isRegEx {
 			return regExp(columndb, value)
 		}
@@ -475,7 +475,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 			return ""
 		}
 		return fmt.Sprintf("%s = %d", columndb, intval)
-	case "bool", "BOOL":
+	case "bool", "BOOL", "numeric":
 		boolval, err := strconv.ParseBool(value)
 		queryval := "NOT"
 		if err == nil && boolval {
@@ -571,7 +571,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 		default:
 			return val, nil
 		}
-	case "bool", "BOOL":
+	case "bool", "BOOL", "numeric":
 		switch vType.String() {
 		case "int64":
 			return val.(int64) == 1, nil
