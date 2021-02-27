@@ -1275,7 +1275,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			})
 		})
 		Describe("Search LIKE string case sensitive", func() {
-			It("returns 2 Juan", func() {
+			FIt("returns 2 Juan", func() {
 
 				mapa := make(map[string]string)
 				mapa["draw"] = "64"
@@ -1296,8 +1296,6 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
-				Expect(result.RecordsTotal).To(Equal(int64(6)))
-				Expect(result.RecordsFiltered).To(Equal(int64(1)))
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
@@ -1305,6 +1303,8 @@ func SimpleFunctionTest(db *gorm.DB) {
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
+				Expect(result.RecordsTotal).To(Equal(int64(6)))
+				Expect(result.RecordsFiltered).To(Equal(int64(1)))
 			})
 		})
 		Describe("Format", func() {

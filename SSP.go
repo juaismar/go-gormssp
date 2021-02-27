@@ -65,7 +65,7 @@ func Simple(c Controller, conn *gorm.DB,
 	}
 
 	//search in DDBB recordsFiltered
-	err = conn.Scopes(filterGlobal(c, columns, columnsType),
+	err = conn.Debug().Scopes(filterGlobal(c, columns, columnsType),
 		filterIndividual(c, columns, columnsType)).
 		Table(table).Count(&responseJSON.RecordsFiltered).Error
 	if err != nil {
