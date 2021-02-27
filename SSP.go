@@ -299,9 +299,11 @@ func filterIndividual(c Controller, columns map[int]Data, columnsType []*sql.Col
 		columnSearch := ""
 		var i int
 		for i = 0; ; i++ {
+			fmt.Printf("i: %v\n", i)
 			keyColumnsI := fmt.Sprintf("columns[%d][data]", i)
 
 			keyColumnsData := c.GetString(keyColumnsI)
+			fmt.Printf("keyColumnsI: %v, keyColumnsData: %v\n", keyColumnsI, keyColumnsData)
 			if keyColumnsData == "" {
 				break
 			}
@@ -451,6 +453,8 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 }
 
 func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) string {
+
+	fmt.Printf("searching: %v\n", searching)
 	switch searching {
 	case "string", "TEXT", "varchar", "VARCHAR":
 		if isRegEx {
