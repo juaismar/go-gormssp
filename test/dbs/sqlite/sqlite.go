@@ -8,7 +8,6 @@ import (
 
 // OpenDB return the Database connection
 func OpenDB() *gorm.DB {
-
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic(err)

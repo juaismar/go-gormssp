@@ -11,7 +11,7 @@ install:
   - go install github.com/onsi/ginkgo/ginkgo
 
 test:
-  adapter: sqlite3
+  adapter: sqlite
   database: ":test:"
   timeout: 500
 
