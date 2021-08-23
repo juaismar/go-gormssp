@@ -510,7 +510,6 @@ func regExp(columndb, value string) string {
 	}
 }
 
-// https://github.com/jinzhu/gorm/issues/1167
 func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 
 	columns, err := rows.Columns()

@@ -12,10 +12,12 @@ _Using Datatables pagination with golang_
 
 ### Pre-requisites 📋
 
+This package use the new version of gorm in https://github.com/go-gorm/gorm, for previous version, go to https://github.com/juaismar/gormssp
+
 Database compatible: Postgres (stable), SQLite (without REGEXP)
 
 * Obviously use it in a golang project
-* Gorm package (https://gorm.io/) (https://github.com/jinzhu/gorm)
+* Gorm package (https://gorm.io/) (https://github.com/go-gorm/gorm)
 * Beego package (https://beego.me/) (https://github.com/astaxie/beego)
 
 ### Installation 🔧
