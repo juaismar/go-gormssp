@@ -118,12 +118,13 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 		Table(table).
 		Rows()
 
-	defer rows.Close()
 	if err != nil {
 		return
 	}
+	defer rows.Close()
 
 	responseJSON.Data, err = dataOutput(columns, rows)
+	rows.Close()
 	if err != nil {
 		return
 	}
