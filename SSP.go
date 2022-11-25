@@ -278,7 +278,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 	return setQuery(db, query, logic, param)
 }
 
-//database func
+// database func
 func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -363,7 +363,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 	}
 }
 
-//Refactor this
+// Refactor this
 func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -409,7 +409,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	}
 }
 func checkOrderDialect(order string) string {
-	if dialect == "sqlite3" {
+	if dialect == "sqlite3" || dialect == "sqlite" {
 		if order == "asc" {
 			return desc
 		}
@@ -461,7 +461,7 @@ func search(column []Data, keyColumnsI string) int {
 	return -1
 }
 
-//check if searchable field is string
+// check if searchable field is string
 func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
