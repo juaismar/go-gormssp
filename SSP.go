@@ -409,7 +409,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	}
 }
 func checkOrderDialect(order string) string {
-	if dialect == "sqlite3" {
+	if isSQLite(dialect) {
 		if order == "asc" {
 			return desc
 		}
@@ -480,8 +480,8 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 }
 
 func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) (string, interface{}) {
-	switch searching {
-	case "string", "TEXT", "varchar", "VARCHAR", "text":
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text":
 		if isRegEx {
 			return regExp(columndb, value)
 		}
@@ -495,7 +495,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
 		}
 		return fmt.Sprintf("\"%s\" = ?", columndb), value
-	case "int32", "INT4", "INT8", "integer", "INTEGER", "bigint":
+	case "int":
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
 		}
@@ -529,7 +529,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 
 func regExp(columndb, value string) (string, string) {
 	switch dialect {
-	case "sqlite":
+	case "sqlite", "sqlite3":
 		//TODO make regexp
 		return fmt.Sprintf("Lower(\"%s\") LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "postgres":
@@ -581,12 +581,25 @@ func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 	return value, nil
 }
 
-func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
-	switch searching {
+func clearSearching(searching string) string {
+	tipeElement := strings.ToLower(searching)
 
-	case "string", "TEXT", "varchar", "VARCHAR":
+	switch {
+	case strings.Contains(tipeElement, "varchar"):
+		return "varchar"
+	case strings.Contains(tipeElement, "int"):
+		return "int"
+	default:
+		return searching
+	}
+}
+
+func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+	switch clearSearching(searching) {
+
+	case "string", "TEXT", "varchar", "text":
 		return val.(string), nil
-	case "int32", "INT4", "INT8", "integer", "bigint", "INTEGER":
+	case "int":
 		return val.(int64), nil
 	case "NUMERIC", "real":
 		switch vType.String() {
@@ -611,7 +624,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 
 	case "TIMESTAMPTZ", "datetime":
 		return val.(time.Time), nil
-	case "UUID", "blob":
+	case "UUID", "uuid", "blob":
 		switch vType.String() {
 		case "[]uint8":
 			return string(val.([]uint8)), nil
@@ -659,7 +672,12 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin map[string]st
 }
 
 func dbConfig(conn *gorm.DB) {
-	if dialect == "sqlite" {
+	if isSQLite(dialect) {
 		conn.Exec("PRAGMA case_sensitive_like = ON;")
 	}
+}
+
+func isSQLite(dialectName string) bool {
+	return dialectName == "sqlite" ||
+		dialectName == "sqlite3"
 }
