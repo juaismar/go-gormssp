@@ -278,7 +278,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 	return setQuery(db, query, logic, param)
 }
 
-//database func
+// database func
 func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -363,7 +363,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 	}
 }
 
-//Refactor this
+// Refactor this
 func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -461,7 +461,7 @@ func search(column []Data, keyColumnsI string) int {
 	return -1
 }
 
-//check if searchable field is string
+// check if searchable field is string
 func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
@@ -480,8 +480,8 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 }
 
 func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) (string, interface{}) {
-	switch searching {
-	case "string", "TEXT", "varchar", "VARCHAR", "text":
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text":
 		if isRegEx {
 			return regExp(columndb, value)
 		}
@@ -495,7 +495,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
 		return fmt.Sprintf("%s = ?", columndb), value
-	case "int32", "INT4", "INT8", "integer", "INTEGER", "bigint":
+	case "int":
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
@@ -581,12 +581,25 @@ func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 	return value, nil
 }
 
-func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
-	switch searching {
+func clearSearching(searching string) string {
+	tipeElement := strings.ToLower(searching)
 
-	case "string", "TEXT", "varchar", "VARCHAR":
+	switch {
+	case strings.Contains(tipeElement, "varchar"):
+		return "varchar"
+	case strings.Contains(tipeElement, "int"):
+		return "int"
+	default:
+		return searching
+	}
+}
+
+func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+	switch clearSearching(searching) {
+
+	case "string", "TEXT", "varchar", "text":
 		return val.(string), nil
-	case "int32", "INT4", "INT8", "integer", "bigint", "INTEGER":
+	case "int":
 		return val.(int64), nil
 	case "NUMERIC", "real":
 		switch vType.String() {
@@ -611,7 +624,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 
 	case "TIMESTAMPTZ", "datetime":
 		return val.(time.Time), nil
-	case "UUID", "blob":
+	case "UUID", "uuid", "blob":
 		switch vType.String() {
 		case "[]uint8":
 			return string(val.([]uint8)), nil
