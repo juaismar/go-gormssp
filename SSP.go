@@ -182,7 +182,7 @@ func dataOutput(columns []Data, rows *sql.Rows) ([]interface{}, error) {
 				dt = strconv.Itoa(column.Dt.(int))
 			}
 
-			db := column.Db
+			db := strings.Replace(column.Db, "\"", "", -1)
 			// Is there a formatter?
 			if column.Formatter != nil {
 				var err error
@@ -348,6 +348,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 					requestRegex = false
 				}
 				query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
+
 				if query == "" {
 					continue
 				}
@@ -396,7 +397,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 
 					order = checkOrderDialect(order)
 
-					query := fmt.Sprintf("\"%s\" %s", column.Db, order)
+					query := fmt.Sprintf("%s %s", column.Db, order)
 					db = db.Order(query)
 				} else {
 					if columnIdx < 0 && c.GetString(columnIdxTittle) == "true" {
@@ -465,14 +466,9 @@ func search(column []Data, keyColumnsI string) int {
 func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
-		if columnInfo.Name() == columndb {
-
+		if strings.Replace(columndb, "\"", "", -1) == columnInfo.Name() {
 			searching := columnInfo.DatabaseTypeName()
-			if strings.Contains(searching, "varchar") {
-				searching = "varchar"
-			}
 			return bindingTypesQuery(searching, CheckReserved(columndb), value, columnInfo, isRegEx, column)
-
 		}
 	}
 
@@ -487,40 +483,40 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 
 		if column.Cs {
-			return fmt.Sprintf("\"%s\" LIKE ?", columndb), "%" + value + "%"
+			return fmt.Sprintf("%s LIKE ?", columndb), "%" + value + "%"
 		}
-		return fmt.Sprintf("Lower(\"%s\") LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "UUID", "blob":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
-		return fmt.Sprintf("\"%s\" = ?", columndb), value
+		return fmt.Sprintf("%s = ?", columndb), value
 	case "int":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
 		intval, err := strconv.Atoi(value)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("\"%s\" = ?", columndb), intval
+		return fmt.Sprintf("%s = ?", columndb), intval
 	case "bool", "BOOL", "numeric":
 		boolval, err := strconv.ParseBool(value)
 		queryval := "NOT"
 		if err == nil && boolval {
 			queryval = ""
 		}
-		return fmt.Sprintf("\"%s\" IS %s TRUE", columndb, queryval), ""
+		return fmt.Sprintf("%s IS %s TRUE", columndb, queryval), ""
 	case "real", "NUMERIC":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
 		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
 		float64val, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("\"%s\" = ?", columndb), float64val
+		return fmt.Sprintf("%s = ?", columndb), float64val
 	default:
 		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return "", ""
@@ -531,11 +527,11 @@ func regExp(columndb, value string) (string, string) {
 	switch dialect {
 	case "sqlite", "sqlite3":
 		//TODO make regexp
-		return fmt.Sprintf("Lower(\"%s\") LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "postgres":
-		return fmt.Sprintf("\"%s\" ~* ?", columndb), value
+		return fmt.Sprintf("%s ~* ?", columndb), value
 	default:
-		return fmt.Sprintf("\"%s\" ~* ?", columndb), value
+		return fmt.Sprintf("%s ~* ?", columndb), value
 	}
 }
 
@@ -569,9 +565,6 @@ func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 		}
 		vType := reflect.TypeOf(val)
 		searching := columnsType[i].DatabaseTypeName()
-		if strings.Contains(searching, "varchar") {
-			searching = "varchar"
-		}
 		value[key], err = getFieldsSearch(searching, key, val, vType)
 		if err != nil {
 			return nil, err

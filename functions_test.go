@@ -1471,7 +1471,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 		})
 	})
 	Describe("Field with space", func() {
-		FIt("return favorite song ", func() {
+		It("return favorite song ", func() {
 
 			mapa := make(map[string]string)
 			mapa["draw"] = "64"
@@ -1492,7 +1492,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			columns := []ssp.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
-				{Db: "Favorite song", Dt: 1, Formatter: nil},
+				{Db: "\"Favorite song\"", Dt: 1, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
 
