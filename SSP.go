@@ -182,7 +182,7 @@ func dataOutput(columns []Data, rows *sql.Rows) ([]interface{}, error) {
 				dt = strconv.Itoa(column.Dt.(int))
 			}
 
-			db := column.Db
+			db := strings.Replace(column.Db, "\"", "", -1)
 			// Is there a formatter?
 			if column.Formatter != nil {
 				var err error
@@ -238,7 +238,7 @@ func buildSelect(table string, join map[string]string, conn *gorm.DB) (query str
 func addFieldsSelect(table string, conn *gorm.DB) (query string, err error) {
 	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
 	for _, columnInfo := range columnsType {
-		query += fmt.Sprintf(", %s.%s AS \"%s.%s\"", table, columnInfo.Name(), table, columnInfo.Name())
+		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", table, columnInfo.Name(), table, columnInfo.Name())
 	}
 	return
 }
@@ -348,6 +348,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 					requestRegex = false
 				}
 				query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
+
 				if query == "" {
 					continue
 				}
@@ -465,14 +466,9 @@ func search(column []Data, keyColumnsI string) int {
 func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
-		if columnInfo.Name() == columndb {
-
+		if strings.Replace(columndb, "\"", "", -1) == columnInfo.Name() {
 			searching := columnInfo.DatabaseTypeName()
-			if strings.Contains(searching, "varchar") {
-				searching = "varchar"
-			}
 			return bindingTypesQuery(searching, CheckReserved(columndb), value, columnInfo, isRegEx, column)
-
 		}
 	}
 
@@ -569,9 +565,6 @@ func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 		}
 		vType := reflect.TypeOf(val)
 		searching := columnsType[i].DatabaseTypeName()
-		if strings.Contains(searching, "varchar") {
-			searching = "varchar"
-		}
 		value[key], err = getFieldsSearch(searching, key, val, vType)
 		if err != nil {
 			return nil, err
