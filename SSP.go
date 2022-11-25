@@ -238,7 +238,7 @@ func buildSelect(table string, join map[string]string, conn *gorm.DB) (query str
 func addFieldsSelect(table string, conn *gorm.DB) (query string, err error) {
 	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
 	for _, columnInfo := range columnsType {
-		query += fmt.Sprintf(", %s.%s AS \"%s.%s\"", table, columnInfo.Name(), table, columnInfo.Name())
+		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", table, columnInfo.Name(), table, columnInfo.Name())
 	}
 	return
 }
@@ -278,7 +278,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 	return setQuery(db, query, logic, param)
 }
 
-//database func
+// database func
 func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -363,7 +363,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 	}
 }
 
-//Refactor this
+// Refactor this
 func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -396,7 +396,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 
 					order = checkOrderDialect(order)
 
-					query := fmt.Sprintf("%s %s", column.Db, order)
+					query := fmt.Sprintf("\"%s\" %s", column.Db, order)
 					db = db.Order(query)
 				} else {
 					if columnIdx < 0 && c.GetString(columnIdxTittle) == "true" {
@@ -461,7 +461,7 @@ func search(column []Data, keyColumnsI string) int {
 	return -1
 }
 
-//check if searchable field is string
+// check if searchable field is string
 func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
@@ -487,40 +487,40 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 
 		if column.Cs {
-			return fmt.Sprintf("%s LIKE ?", columndb), "%" + value + "%"
+			return fmt.Sprintf("\"%s\" LIKE ?", columndb), "%" + value + "%"
 		}
-		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+		return fmt.Sprintf("Lower(\"%s\") LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "UUID", "blob":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
 		}
-		return fmt.Sprintf("%s = ?", columndb), value
+		return fmt.Sprintf("\"%s\" = ?", columndb), value
 	case "int32", "INT4", "INT8", "integer", "INTEGER", "bigint":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
 		}
 		intval, err := strconv.Atoi(value)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("%s = ?", columndb), intval
+		return fmt.Sprintf("\"%s\" = ?", columndb), intval
 	case "bool", "BOOL", "numeric":
 		boolval, err := strconv.ParseBool(value)
 		queryval := "NOT"
 		if err == nil && boolval {
 			queryval = ""
 		}
-		return fmt.Sprintf("%s IS %s TRUE", columndb, queryval), ""
+		return fmt.Sprintf("\"%s\" IS %s TRUE", columndb, queryval), ""
 	case "real", "NUMERIC":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(\"%s\" AS TEXT)", columndb), value)
 		}
 		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
 		float64val, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("%s = ?", columndb), float64val
+		return fmt.Sprintf("\"%s\" = ?", columndb), float64val
 	default:
 		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return "", ""
@@ -531,11 +531,11 @@ func regExp(columndb, value string) (string, string) {
 	switch dialect {
 	case "sqlite":
 		//TODO make regexp
-		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+		return fmt.Sprintf("Lower(\"%s\") LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "postgres":
-		return fmt.Sprintf("%s ~* ?", columndb), value
+		return fmt.Sprintf("\"%s\" ~* ?", columndb), value
 	default:
-		return fmt.Sprintf("%s ~* ?", columndb), value
+		return fmt.Sprintf("\"%s\" ~* ?", columndb), value
 	}
 }
 
