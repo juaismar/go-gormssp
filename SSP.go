@@ -409,7 +409,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 	}
 }
 func checkOrderDialect(order string) string {
-	if dialect == "sqlite3" || dialect == "sqlite" {
+	if isSQLite(dialect) {
 		if order == "asc" {
 			return desc
 		}
@@ -529,7 +529,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 
 func regExp(columndb, value string) (string, string) {
 	switch dialect {
-	case "sqlite":
+	case "sqlite", "sqlite3":
 		//TODO make regexp
 		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "postgres":
@@ -659,7 +659,12 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin map[string]st
 }
 
 func dbConfig(conn *gorm.DB) {
-	if dialect == "sqlite" {
+	if isSQLite(dialect) {
 		conn.Exec("PRAGMA case_sensitive_like = ON;")
 	}
+}
+
+func isSQLite(dialectName string) bool {
+	return dialectName == "sqlite" ||
+		dialectName == "sqlite3"
 }
