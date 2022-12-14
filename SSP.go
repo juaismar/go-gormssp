@@ -507,7 +507,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 			queryval = ""
 		}
 		return fmt.Sprintf("%s IS %s TRUE", columndb, queryval), ""
-	case "real", "NUMERIC":
+	case "REAL", "NUMERIC":
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
@@ -599,7 +599,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 		default:
 			return val.(int64), nil
 		}
-	case "NUMERIC", "real":
+	case "NUMERIC", "REAL":
 		switch vType.String() {
 		case "[]uint8":
 			return strconv.ParseFloat(string(val.([]uint8)), 64)
