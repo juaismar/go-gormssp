@@ -123,7 +123,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereJoin := make(map[string]string, 0)
 
 			whereAll := make([]string, 0)
-			whereAll = append(whereAll, "fun IS TRUE")
+			whereAll = append(whereAll, "fun = '1'")
 
 			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
@@ -161,7 +161,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
-			whereResult = append(whereResult, "fun IS TRUE")
+			whereResult = append(whereResult, "fun = '1'")
 
 			whereJoin := make(map[string]string, 0)
 			whereAll := make([]string, 0)
@@ -1420,7 +1420,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			row["0"] = "JuAn"
 			row["1"] = "Trompeta"
 			testData = append(testData, row)
-
+			//
 			Expect(result.Data).To(Equal(testData))
 		})
 		It("Ordering by instrument desc", func() {

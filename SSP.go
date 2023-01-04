@@ -13,9 +13,6 @@ import (
 
 var dialect = ""
 
-const asc = "asc NULLS FIRST"
-const desc = "desc NULLS LAST"
-
 // Data is a line in map that link the database field with datatable field
 type Data struct {
 	Db        string                                                                  //name of column
@@ -390,14 +387,8 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 					columnIdxTittle = fmt.Sprintf("order[%d][dir]", i)
 					requestColumnData = c.GetString(columnIdxTittle)
 
-					order := "desc"
-					if requestColumnData == "asc" {
-						order = "asc"
-					}
+					query := checkOrderDialect(column.Db, requestColumnData)
 
-					order = checkOrderDialect(order)
-
-					query := fmt.Sprintf("%s %s", column.Db, order)
 					db = db.Order(query)
 				} else {
 					if columnIdx < 0 && c.GetString(columnIdxTittle) == "true" {
@@ -409,18 +400,29 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 		return db
 	}
 }
-func checkOrderDialect(order string) string {
-	if isSQLite(dialect) {
-		if order == "asc" {
-			return desc
-		}
-		return asc
-	}
+func checkOrderDialect(column, order string) string {
+	const asc = "ASC NULLS FIRST"
+	const desc = "DESC NULLS LAST"
 
-	if order == "asc" {
-		return asc
+	switch {
+	case isSQLite(dialect):
+		if order == "asc" {
+			return fmt.Sprintf("%s %s", column, desc)
+		}
+		return fmt.Sprintf("%s %s", column, asc)
+	case dialect == "sqlserver":
+		if order == "asc" {
+			//(CASE WHEN [Order] IS NULL THEN 0 ELSE 1 END), [Order] ASC
+			return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS ASC", column)
+		}
+		//(CASE WHEN [Order] IS NULL THEN 1 ELSE 0 END), [Order] DESC
+		return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS DESC", column)
+	default:
+		if order == "asc" {
+			return fmt.Sprintf("%s %s", column, asc)
+		}
+		return fmt.Sprintf("%s %s", column, desc)
 	}
-	return desc
 }
 
 func limit(c Controller) func(db *gorm.DB) *gorm.DB {
@@ -434,6 +436,9 @@ func limit(c Controller) func(db *gorm.DB) *gorm.DB {
 
 		if err != nil || length < 0 {
 			length = 10
+		}
+		if length == 0 {
+			length = 1
 		}
 
 		return db.Offset(start).Limit(length)
@@ -483,7 +488,11 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 
 		if column.Cs {
+			if dialect == "sqlserver" {
+				return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS LIKE ?", columndb), "%" + value + "%"
+			}
 			return fmt.Sprintf("%s LIKE ?", columndb), "%" + value + "%"
+
 		}
 		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "UUID", "blob":
@@ -500,14 +509,10 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 			return "", ""
 		}
 		return fmt.Sprintf("%s = ?", columndb), intval
-	case "bool", "BOOL", "numeric":
-		boolval, err := strconv.ParseBool(value)
-		queryval := "NOT"
-		if err == nil && boolval {
-			queryval = ""
-		}
-		return fmt.Sprintf("%s IS %s TRUE", columndb, queryval), ""
-	case "REAL", "NUMERIC":
+	case "bool", "BOOL", "numeric", "BIT":
+		boolval, _ := strconv.ParseBool(value)
+		return columndb, boolval
+	case "REAL", "NUMERIC", "FLOAT":
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
 		}
@@ -530,6 +535,9 @@ func regExp(columndb, value string) (string, string) {
 		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
 	case "postgres":
 		return fmt.Sprintf("%s ~* ?", columndb), value
+	case "sqlserver":
+		//TODO make regexp
+		return fmt.Sprintf("%s LIKE ?", columndb), value
 	default:
 		return fmt.Sprintf("%s ~* ?", columndb), value
 	}
@@ -599,7 +607,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 		default:
 			return val.(int64), nil
 		}
-	case "NUMERIC", "REAL":
+	case "NUMERIC", "REAL", "FLOAT":
 		switch vType.String() {
 		case "[]uint8":
 			return strconv.ParseFloat(string(val.([]uint8)), 64)
@@ -610,7 +618,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 		default:
 			return val, nil
 		}
-	case "bool", "BOOL", "numeric":
+	case "bool", "BOOL", "numeric", "BIT":
 		switch vType.String() {
 		case "int64":
 			return val.(int64) == 1, nil
@@ -620,7 +628,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 			return val, nil
 		}
 
-	case "TIMESTAMPTZ", "datetime":
+	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET":
 		return val.(time.Time), nil
 	case "UUID", "uuid", "blob":
 		switch vType.String() {
@@ -653,7 +661,7 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin map[string]st
 		Scopes(
 			setJoins(whereJoin),
 		).
-		Limit(0).
+		Limit(1).
 		Rows()
 	if err != nil {
 		return nil, err
