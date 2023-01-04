@@ -33,11 +33,11 @@ var _ = Describe("Test POSTGRES", func() {
 var _ = Describe("Test SQLserver", func() {
 	db := sqlserver.OpenDB()
 
-	//ComplexFunctionTest(db)
+	ComplexFunctionTest(db)
 	//RegExpTest(db)
-	//Types(db)
+	Types(db)
 	SimpleFunctionTest(db)
-	//Errors(db)
+	Errors(db)
 })
 
 var _ = Describe("Test aux functions", func() {
