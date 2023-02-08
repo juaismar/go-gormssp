@@ -51,7 +51,7 @@ func Simple(c Controller, conn *gorm.DB,
 		Scopes(limit(c),
 			filterGlobal(c, columns, columnsType),
 			filterIndividual(c, columns, columnsType),
-			order(c, columns)).
+			order(c, columns, columnsType)).
 		Table(table).
 		Rows()
 	defer rows.Close()
@@ -112,7 +112,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 			limit(c),
 			filterGlobal(c, columns, columnsType),
 			filterIndividual(c, columns, columnsType),
-			order(c, columns)).
+			order(c, columns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -362,7 +362,8 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 }
 
 // Refactor this
-func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
+func order(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
+
 	return func(db *gorm.DB) *gorm.DB {
 
 		if c.GetString("order[0][column]") != "" {
@@ -387,7 +388,7 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 					columnIdxTittle = fmt.Sprintf("order[%d][dir]", i)
 					requestColumnData = c.GetString(columnIdxTittle)
 
-					query := checkOrderDialect(column.Db, requestColumnData)
+					query := checkOrderDialect(column.Db, requestColumnData, columnsType)
 
 					db = db.Order(query)
 				} else {
@@ -400,17 +401,24 @@ func order(c Controller, columns []Data) func(db *gorm.DB) *gorm.DB {
 		return db
 	}
 }
-func checkOrderDialect(column, order string) string {
+
+func checkOrderDialect(column, order string, columnsType []*sql.ColumnType) string {
 	const asc = "ASC NULLS FIRST"
 	const desc = "DESC NULLS LAST"
 
 	switch {
-	case isSQLite(dialect):
+	case isSQLite(dialect) && !isNumeric(column, columnsType):
 		if order == "asc" {
 			return fmt.Sprintf("%s %s", column, desc)
 		}
 		return fmt.Sprintf("%s %s", column, asc)
 	case dialect == "sqlserver":
+		if isNumeric(column, columnsType) {
+			if order == "asc" {
+				return fmt.Sprintf("%s ASC", column)
+			}
+			return fmt.Sprintf("%s DESC", column)
+		}
 		if order == "asc" {
 			//(CASE WHEN [Order] IS NULL THEN 0 ELSE 1 END), [Order] ASC
 			return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS ASC", column)
@@ -686,4 +694,29 @@ func dbConfig(conn *gorm.DB) {
 func isSQLite(dialectName string) bool {
 	return dialectName == "sqlite" ||
 		dialectName == "sqlite3"
+}
+
+func isNumeric(column string, columnsType []*sql.ColumnType) bool {
+	for _, columnInfo := range columnsType {
+		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
+			searching := columnInfo.DatabaseTypeName()
+			return bindingTypesNumeric(searching, columnInfo)
+		}
+	}
+
+	return false
+}
+
+func bindingTypesNumeric(searching string, columnInfo *sql.ColumnType) bool {
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text", "UUID", "blob":
+		return false
+	case "int", "REAL", "NUMERIC", "FLOAT":
+		return true
+	case "bool", "BOOL", "numeric", "BIT":
+		return true
+	default:
+		fmt.Printf("(007) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
+		return false
+	}
 }
