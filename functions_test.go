@@ -1469,6 +1469,54 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			Expect(result.Data).To(Equal(testData))
 		})
+		It("Order non string fields (for sqlserver)", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "desc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][orderable]"] = "true"
+			mapa["columns[0][search][value]"] = ""
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []ssp.Data{
+				{Db: "toys", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns)
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(6)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = int64(3)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(2)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(2)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(1)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(1)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(0)
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
 	})
 	Describe("Field with space", func() {
 		It("return favorite song ", func() {
