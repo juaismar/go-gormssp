@@ -407,13 +407,13 @@ func checkOrderDialect(column, order string, columnsType []*sql.ColumnType) stri
 	const desc = "DESC NULLS LAST"
 
 	switch {
-	case isSQLite(dialect) && !isNumeric(column, columnsType):
+	case isSQLite(dialect) && (!isNumeric(column, columnsType) || !isDatetime(column, columnsType)):
 		if order == "asc" {
 			return fmt.Sprintf("%s %s", column, desc)
 		}
 		return fmt.Sprintf("%s %s", column, asc)
 	case dialect == "sqlserver":
-		if isNumeric(column, columnsType) {
+		if isNumeric(column, columnsType) || isDatetime(column, columnsType) {
 			if order == "asc" {
 				return fmt.Sprintf("%s ASC", column)
 			}
@@ -701,6 +701,16 @@ func isNumeric(column string, columnsType []*sql.ColumnType) bool {
 		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
 			searching := columnInfo.DatabaseTypeName()
 			return bindingTypesNumeric(searching, columnInfo)
+		}
+	}
+
+	return false
+}
+func isDatetime(column string, columnsType []*sql.ColumnType) bool {
+	for _, columnInfo := range columnsType {
+		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
+			searching := columnInfo.DatabaseTypeName()
+			return searching == "datetime" || searching == "TIMESTAMPTZ" || searching == "DATETIMEOFFSET"
 		}
 	}
 

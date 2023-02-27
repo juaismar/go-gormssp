@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const layoutISO = "2006-01-02"
+
 // ControllerEmulated emulate the beego controller
 type ControllerEmulated struct {
 	Params map[string]string
@@ -859,8 +861,6 @@ func Types(db *gorm.DB) {
 				columns := []ssp.Data{
 					{Db: "birth_date", Dt: 0, Formatter: func(
 						data interface{}, row map[string]interface{}) (interface{}, error) {
-
-						layoutISO := "2006-01-02"
 						testTime, err := time.Parse(layoutISO, "2011-11-11")
 
 						time := data.(time.Time)
@@ -1469,6 +1469,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			Expect(result.Data).To(Equal(testData))
 		})
+
 		It("Order non string fields (for sqlserver)", func() {
 
 			mapa := make(map[string]string)
@@ -1517,6 +1518,51 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			Expect(result.Data).To(Equal(testData))
 		})
+	})
+	FIt("Order dates (for sqlserver)", func() {
+
+		mapa := make(map[string]string)
+		mapa["draw"] = "64"
+		mapa["start"] = "0"
+		mapa["length"] = "10"
+		mapa["order[0][column]"] = "0"
+		mapa["order[0][dir]"] = "desc"
+
+		mapa["columns[0][data]"] = "0"
+		mapa["columns[0][searchable]"] = "true"
+		mapa["columns[0][orderable]"] = "true"
+		mapa["columns[0][search][value]"] = ""
+
+		c := ControllerEmulated{Params: mapa}
+
+		columns := []ssp.Data{
+			{Db: "birth_date", Dt: 0, Formatter: nil},
+		}
+		result, err := ssp.Simple(&c, db, "users", columns)
+
+		Expect(err).To(BeNil())
+		Expect(result.Draw).To(Equal(64))
+		Expect(result.RecordsTotal).To(Equal(int64(6)))
+		Expect(result.RecordsFiltered).To(Equal(int64(6)))
+
+		/*
+			TODO Test date order
+			date, _ := time.Parse(layoutISO, "2011-11-11")
+			date2, _ := time.Parse(layoutISO, "2011-12-11")
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = date2
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = date
+			testData = append(testData, row)
+			testData = append(testData, row)
+			testData = append(testData, row)
+			testData = append(testData, row)
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		*/
 	})
 	Describe("Field with space", func() {
 		It("return favorite song ", func() {
