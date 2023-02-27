@@ -94,7 +94,7 @@ func (c *User) Pagination() {
 }
 ```
 
--Tables with spaces in the name or styart whit numbers must be between \".
+-Tables with spaces in the name or start whit numbers must be between \".
 ```
 SSP.Data{Db: "\"1My special table\"", Dt: 3, Formatter: nil}
 ```

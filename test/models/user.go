@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var layoutISO = "2006-01-02"
+const layoutISO = "2006-01-02"
 
 // User is the model for test
 type User struct {
@@ -31,6 +31,7 @@ type User struct {
 func GetDefaultUser() []User {
 
 	date, _ := time.Parse(layoutISO, "2011-11-11")
+	date2, _ := time.Parse(layoutISO, "2011-12-11")
 
 	uuidJuan, _ := uuid.FromString("bfe44cb2-c65c-4f37-9672-8437b6718d70")
 	uuidJuAn, _ := uuid.FromString("c14be350-6671-4ffe-8108-608ebcccf036")
@@ -46,7 +47,7 @@ func GetDefaultUser() []User {
 			Instrument:   "Tambor",
 			Age:          10,
 			Candies:      0,
-			BirthDate:    date,
+			BirthDate:    date2,
 			Fun:          true,
 			Money:        2.0,
 			Bitcoins:     3.0,
