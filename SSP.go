@@ -636,7 +636,7 @@ func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type)
 			return val, nil
 		}
 
-	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET":
+	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET", "DATETIME":
 		return val.(time.Time), nil
 	case "UUID", "uuid", "blob":
 		switch vType.String() {
@@ -710,7 +710,7 @@ func isDatetime(column string, columnsType []*sql.ColumnType) bool {
 	for _, columnInfo := range columnsType {
 		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
 			searching := columnInfo.DatabaseTypeName()
-			return searching == "datetime" || searching == "TIMESTAMPTZ" || searching == "DATETIMEOFFSET"
+			return searching == "datetime" || searching == "TIMESTAMPTZ" || searching == "DATETIMEOFFSET" || searching == "DATETIME"
 		}
 	}
 
@@ -719,7 +719,7 @@ func isDatetime(column string, columnsType []*sql.ColumnType) bool {
 
 func bindingTypesNumeric(searching string, columnInfo *sql.ColumnType) bool {
 	switch clearSearching(searching) {
-	case "string", "TEXT", "varchar", "text", "UUID", "blob":
+	case "string", "TEXT", "varchar", "text", "UUID", "blob", "datetime", "TIMESTAMPTZ", "DATETIMEOFFSET", "DATETIME":
 		return false
 	case "int", "REAL", "NUMERIC", "FLOAT":
 		return true
