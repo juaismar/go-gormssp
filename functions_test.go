@@ -861,11 +861,9 @@ func Types(db *gorm.DB) {
 				columns := []ssp.Data{
 					{Db: "birth_date", Dt: 0, Formatter: func(
 						data interface{}, row map[string]interface{}) (interface{}, error) {
-						testTime, err := time.Parse(layoutISO, "2011-11-11")
-
 						time := data.(time.Time)
-
-						Expect(time.Equal(testTime)).To(BeTrue())
+						var err error
+						Expect(time.Format(layoutISO)).To(Equal("2011-12-11"))
 						return time, err
 					}},
 				}
@@ -1519,7 +1517,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			Expect(result.Data).To(Equal(testData))
 		})
 	})
-	FIt("Order dates (for sqlserver)", func() {
+	It("Order dates (for sqlserver)", func() {
 
 		mapa := make(map[string]string)
 		mapa["draw"] = "64"
