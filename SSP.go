@@ -407,7 +407,7 @@ func checkOrderDialect(column, order string, columnsType []*sql.ColumnType) stri
 	const desc = "DESC NULLS LAST"
 
 	switch {
-	case isSQLite(dialect) && (!isNumeric(column, columnsType) || !isDatetime(column, columnsType)):
+	case isSQLite(dialect) && !(isNumeric(column, columnsType) || isDatetime(column, columnsType)):
 		if order == "asc" {
 			return fmt.Sprintf("%s %s", column, desc)
 		}
