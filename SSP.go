@@ -18,6 +18,7 @@ type Data struct {
 	Db        string                                                                  //name of column
 	Dt        interface{}                                                             //id of column in client (int or string)
 	Cs        bool                                                                    //case sensitive - optional default false
+	Sf        string                                                                  //Search Function - for custom functions declared in your ddbb
 	Formatter func(data interface{}, row map[string]interface{}) (interface{}, error) // - optional
 }
 
@@ -489,47 +490,52 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 }
 
 func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) (string, interface{}) {
+	var fieldName = columndb
+	if column.Sf != "" { //if implement custom search function
+		fieldName = column.Sf
+	}
+
 	switch clearSearching(searching) {
 	case "string", "TEXT", "varchar", "text":
 		if isRegEx {
-			return regExp(columndb, value)
+			return regExp(fieldName, value)
 		}
 
 		if column.Cs {
 			if dialect == "sqlserver" {
-				return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS LIKE ?", columndb), "%" + value + "%"
+				return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS LIKE ?", fieldName), "%" + value + "%"
 			}
-			return fmt.Sprintf("%s LIKE ?", columndb), "%" + value + "%"
+			return fmt.Sprintf("%s LIKE ?", fieldName), "%" + value + "%"
 
 		}
-		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+		return fmt.Sprintf("Lower(%s) LIKE ?", fieldName), "%" + strings.ToLower(value) + "%"
 	case "UUID", "blob":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
 		}
-		return fmt.Sprintf("%s = ?", columndb), value
+		return fmt.Sprintf("%s = ?", fieldName), value
 	case "int":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
 		}
 		intval, err := strconv.Atoi(value)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("%s = ?", columndb), intval
+		return fmt.Sprintf("%s = ?", fieldName), intval
 	case "bool", "BOOL", "numeric", "BIT":
 		boolval, _ := strconv.ParseBool(value)
-		return columndb, boolval
+		return fieldName, boolval
 	case "REAL", "NUMERIC", "FLOAT":
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", columndb), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
 		}
 		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
 		float64val, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return "", ""
 		}
-		return fmt.Sprintf("%s = ?", columndb), float64val
+		return fmt.Sprintf("%s = ?", fieldName), float64val
 	default:
 		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return "", ""
