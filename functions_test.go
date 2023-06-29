@@ -1175,6 +1175,52 @@ func SimpleFunctionTest(db *gorm.DB) {
 				Expect(result.Data).To(Equal(testData))
 			})
 		})
+		It("global search and individual search together", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["search[value]"] = "uAn"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][search][value]"] = ""
+
+			mapa["columns[1][data]"] = "1"
+			mapa["columns[1][searchable]"] = "true"
+			mapa["columns[1][search][value]"] = "Tambor"
+
+			mapa["columns[2][data]"] = "2"
+			mapa["columns[2][searchable]"] = "true"
+			mapa["columns[2][search][value]"] = ""
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []ssp.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+				{Db: "instrument", Dt: 1, Formatter: nil},
+				{Db: "age", Dt: 2, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns)
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(1)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Juan"
+			row["1"] = "Tambor"
+			row["2"] = int64(10)
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
 		Describe("Naming a row", func() {
 			It("returns all", func() {
 

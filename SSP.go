@@ -48,10 +48,10 @@ func Simple(c Controller, conn *gorm.DB,
 	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
 
 	// Build the SQL query string from the request
-	rows, err := conn.Select("*").
+	rows, err := conn.Debug().Select("*").
+		Where(filterGlobal(c, columns, columnsType, conn)).
+		Where(filterIndividual(c, columns, columnsType, conn)).
 		Scopes(limit(c),
-			filterGlobal(c, columns, columnsType),
-			filterIndividual(c, columns, columnsType),
 			order(c, columns, columnsType)).
 		Table(table).
 		Rows()
@@ -66,8 +66,9 @@ func Simple(c Controller, conn *gorm.DB,
 	}
 
 	//search in DDBB recordsFiltered
-	err = conn.Scopes(filterGlobal(c, columns, columnsType),
-		filterIndividual(c, columns, columnsType)).
+	err = conn.
+		Where(filterGlobal(c, columns, columnsType, conn)).
+		Where(filterIndividual(c, columns, columnsType, conn)).
 		Table(table).Count(&responseJSON.RecordsFiltered).Error
 	if err != nil {
 		return
@@ -108,11 +109,11 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	}
 
 	rows, err := conn.Select(selectQuery).
+		Where(filterGlobal(c, columns, columnsType, conn)).
+		Where(filterIndividual(c, columns, columnsType, conn)).
 		Scopes(
 			setJoins(whereJoin),
 			limit(c),
-			filterGlobal(c, columns, columnsType),
-			filterIndividual(c, columns, columnsType),
 			order(c, columns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
@@ -132,10 +133,11 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 
 	//search in DDBB recordsFiltered
 	err = conn.
+		Where(filterGlobal(c, columns, columnsType, conn)).
+		Where(filterIndividual(c, columns, columnsType, conn)).
 		Scopes(
 			setJoins(whereJoin),
-			filterGlobal(c, columns, columnsType),
-			filterIndividual(c, columns, columnsType)).
+		).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -277,89 +279,87 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 }
 
 // database func
-func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
+func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
-		str := c.GetString("search[value]")
-		if str == "" {
-			return db
-		}
-		requestRegex := ParamToBool(c, "search[regex]")
-
-		//all columns filtering
-		var i int
-		first := true
-		for i = 0; ; i++ {
-			keyColumnsI := fmt.Sprintf("columns[%d][data]", i)
-
-			keyColumnsData := c.GetString(keyColumnsI)
-			if keyColumnsData == "" {
-				break
-			}
-			columnIdx := search(columns, keyColumnsData)
-
-			requestColumnQuery := fmt.Sprintf("columns[%d][searchable]", i)
-			requestColumn := c.GetString(requestColumnQuery)
-
-			if columnIdx > -1 && requestColumn == "true" {
-
-				query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
-				if query == "" {
-					continue
-				}
-				db = setGlobalQuery(db, query, param, first)
-				first = false
-
-			} else {
-				if columnIdx < 0 && requestColumn == "true" {
-					fmt.Printf("(002) Do you forgot searchable: false in column %v ? or wrong column name in client side\n (client field data: must be same than server side DT: field)\n", keyColumnsData)
-				}
-			}
-		}
+	str := c.GetString("search[value]")
+	if str == "" {
 		return db
 	}
+	requestRegex := ParamToBool(c, "search[regex]")
+	//all columns filtering
+	var i int
+	first := true
+	for i = 0; ; i++ {
+		keyColumnsI := fmt.Sprintf("columns[%d][data]", i)
+
+		keyColumnsData := c.GetString(keyColumnsI)
+		if keyColumnsData == "" {
+			break
+		}
+		columnIdx := search(columns, keyColumnsData)
+
+		requestColumnQuery := fmt.Sprintf("columns[%d][searchable]", i)
+		requestColumn := c.GetString(requestColumnQuery)
+
+		if columnIdx > -1 && requestColumn == "true" {
+
+			query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
+			if query == "" {
+				continue
+			}
+			db = setGlobalQuery(db, query, param, first)
+			first = false
+
+		} else {
+			if columnIdx < 0 && requestColumn == "true" {
+				fmt.Printf("(002) Do you forgot searchable: false in column %v ? or wrong column name in client side\n (client field data: must be same than server side DT: field)\n", keyColumnsData)
+			}
+		}
+	}
+	return db
+
 }
 
-func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		// Individual column filtering
-		var i int
-		for i = 0; ; i++ {
-			keyColumnsI := fmt.Sprintf("columns[%d][data]", i)
+func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
-			keyColumnsData := c.GetString(keyColumnsI)
-			if keyColumnsData == "" {
-				break
+	// Individual column filtering
+	var i int
+	for i = 0; ; i++ {
+		keyColumnsI := fmt.Sprintf("columns[%d][data]", i)
+
+		keyColumnsData := c.GetString(keyColumnsI)
+		if keyColumnsData == "" {
+			break
+		}
+
+		columnIdx := search(columns, keyColumnsData)
+
+		requestColumnQuery := fmt.Sprintf("columns[%d][searchable]", i)
+		requestColumn := c.GetString(requestColumnQuery)
+
+		requestColumnQuery = fmt.Sprintf("columns[%d][search][value]", i)
+		str := c.GetString(requestColumnQuery)
+		if columnIdx > -1 && requestColumn == "true" && str != "" {
+			requestRegexQuery := fmt.Sprintf("columns[%d][search][regex]", i)
+			requestRegex, err := strconv.ParseBool(c.GetString(requestRegexQuery))
+			if err != nil {
+				requestRegex = false
 			}
+			query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
 
-			columnIdx := search(columns, keyColumnsData)
+			if query == "" {
+				continue
+			}
+			db = setQuery(db, query, "where", param)
 
-			requestColumnQuery := fmt.Sprintf("columns[%d][searchable]", i)
-			requestColumn := c.GetString(requestColumnQuery)
-
-			requestColumnQuery = fmt.Sprintf("columns[%d][search][value]", i)
-			str := c.GetString(requestColumnQuery)
-			if columnIdx > -1 && requestColumn == "true" && str != "" {
-				requestRegexQuery := fmt.Sprintf("columns[%d][search][regex]", i)
-				requestRegex, err := strconv.ParseBool(c.GetString(requestRegexQuery))
-				if err != nil {
-					requestRegex = false
-				}
-				query, param := bindingTypes(str, columnsType, columns[columnIdx], requestRegex)
-
-				if query == "" {
-					continue
-				}
-				db = setQuery(db, query, "where", param)
-
-			} else {
-				if columnIdx < 0 && requestColumn == "true" {
-					fmt.Printf("(001) Do you forgot searchable: false in column %v ? or wrong column name in client side\n (client field data: must be same than server side DT: field)\n", keyColumnsData)
-				}
+		} else {
+			if columnIdx < 0 && requestColumn == "true" {
+				fmt.Printf("(001) Do you forgot searchable: false in column %v ? or wrong column name in client side\n (client field data: must be same than server side DT: field)\n", keyColumnsData)
 			}
 		}
-		return db
 	}
+	return db
+
 }
 
 // Refactor this
