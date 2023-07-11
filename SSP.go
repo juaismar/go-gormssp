@@ -524,6 +524,9 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 		return fmt.Sprintf("%s = ?", fieldName), intval
 	case "bool", "BOOL", "numeric", "BIT":
+		if isNil(value) {
+			return fieldName, nil
+		}
 		boolval, _ := strconv.ParseBool(value)
 		return fieldName, boolval
 	case "REAL", "NUMERIC", "FLOAT":
@@ -735,4 +738,9 @@ func bindingTypesNumeric(searching string, columnInfo *sql.ColumnType) bool {
 		fmt.Printf("(007) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return false
 	}
+}
+
+func isNil(val string) bool {
+	valLower := strings.ToLower(val)
+	return valLower == "null" || valLower == "nil" || valLower == "undefined"
 }
