@@ -76,9 +76,6 @@ func Simple(c Controller, conn *gorm.DB,
 
 	//search in DDBB recordsTotal
 	err = conn.Table(table).Count(&responseJSON.RecordsTotal).Error
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -150,9 +147,6 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	err = conn.Table(table).
 		Scopes(setJoins(whereJoin)).
 		Where(whereAllFlated).Count(&responseJSON.RecordsTotal).Error
-	if err != nil {
-		return
-	}
 
 	return
 }
