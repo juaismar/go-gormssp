@@ -82,9 +82,6 @@ func Simple(c Controller, conn *gorm.DB,
 
 	//search in DDBB recordsTotal
 	err = conn.Table(table).Count(&responseJSON.RecordsTotal).Error
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -156,9 +153,6 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	err = conn.Table(table).
 		Scopes(setJoins(whereJoin)).
 		Where(whereAllFlated).Count(&responseJSON.RecordsTotal).Error
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -534,6 +528,9 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 		return fmt.Sprintf("%s = ?", fieldName), intval
 	case "bool", "BOOL", "numeric", "BIT":
+		if isNil(value) {
+			return fieldName, nil
+		}
 		boolval, _ := strconv.ParseBool(value)
 		return fieldName, boolval
 	case "REAL", "NUMERIC", "FLOAT":
@@ -745,4 +742,9 @@ func bindingTypesNumeric(searching string, columnInfo *sql.ColumnType) bool {
 		fmt.Printf("(007) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return false
 	}
+}
+
+func isNil(val string) bool {
+	valLower := strings.ToLower(val)
+	return valLower == "null" || valLower == "nil" || valLower == "undefined"
 }
