@@ -14,7 +14,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 	responseJSON.Draw = drawNumber(c)
 	dbConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -38,7 +38,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 func DataComplex(c Controller, conn *gorm.DB, table string, columns []Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin map[string]string) (responseJSON MessageDataTable, err error) {
+	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
 

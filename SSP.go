@@ -22,6 +22,12 @@ type Data struct {
 	Formatter func(data interface{}, row map[string]interface{}) (interface{}, error) // - optional
 }
 
+type JoinData struct {
+	Table string //name of column
+	Alias string //id of column in client (int or string)
+	Query string //case sensitive - optional default false
+}
+
 // MessageDataTable is theresponse object
 type MessageDataTable struct {
 	Draw            int           `json:"draw"`
@@ -45,7 +51,7 @@ func Simple(c Controller, conn *gorm.DB,
 	responseJSON.Draw = drawNumber(c)
 	dbConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -84,7 +90,7 @@ func Simple(c Controller, conn *gorm.DB,
 func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin map[string]string) (responseJSON MessageDataTable, err error) {
+	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
 
@@ -214,33 +220,38 @@ func flated(whereArray []string) string {
 	return query
 }
 
-func buildSelect(table string, join map[string]string, conn *gorm.DB) (query string, err error) {
+func buildSelect(table string, join []JoinData, conn *gorm.DB) (query string, err error) {
 	query = fmt.Sprintf("%s.*", table)
 	if len(join) == 0 {
 		return
 	}
 
-	subQuery, err := addFieldsSelect(table, conn)
+	subQuery, err := addFieldsSelect(table, table, conn)
 	query += subQuery
-	for tableName := range join {
-		subQuery, err = addFieldsSelect(tableName, conn)
+	for _, tableData := range join {
+		alias := tableData.Alias
+		if alias == "" {
+			alias = tableData.Table
+		}
+		subQuery, err = addFieldsSelect(tableData.Table, alias, conn)
 		query += subQuery
 	}
+
 	return
 }
 
-func addFieldsSelect(table string, conn *gorm.DB) (query string, err error) {
-	columnsType, err := initBinding(conn, "*", table, make(map[string]string, 0))
+func addFieldsSelect(table, alias string, conn *gorm.DB) (query string, err error) {
+	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 	for _, columnInfo := range columnsType {
-		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", table, columnInfo.Name(), table, columnInfo.Name())
+		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", alias, columnInfo.Name(), alias, columnInfo.Name())
 	}
 	return
 }
 
-func setJoins(joins map[string]string) func(db *gorm.DB) *gorm.DB {
+func setJoins(joins []JoinData) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		for _, join := range joins {
-			db = db.Joins(join)
+			db = db.Joins(join.Query)
 		}
 		return db
 	}
@@ -666,7 +677,7 @@ func makeResultReceiver(length int) []interface{} {
 	return result
 }
 
-func initBinding(db *gorm.DB, selectQuery, table string, whereJoin map[string]string) ([]*sql.ColumnType, error) {
+func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []JoinData) ([]*sql.ColumnType, error) {
 	rows, err := db.Select(selectQuery).
 		Table(table).
 		Scopes(
