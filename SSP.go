@@ -236,13 +236,14 @@ func buildSelect(table string, join []JoinData, conn *gorm.DB) (query string, er
 		subQuery, err = addFieldsSelect(tableData.Table, alias, conn)
 		query += subQuery
 	}
+
 	return
 }
 
 func addFieldsSelect(table, alias string, conn *gorm.DB) (query string, err error) {
 	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 	for _, columnInfo := range columnsType {
-		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", alias, columnInfo.Name(), table, columnInfo.Name())
+		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", alias, columnInfo.Name(), alias, columnInfo.Name())
 	}
 	return
 }

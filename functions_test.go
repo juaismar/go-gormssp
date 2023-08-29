@@ -244,6 +244,72 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			Expect(result.Data).To(Equal(testData))
 		})
+
+		It("Join alias", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "62"
+			mapa["start"] = "0"
+			mapa["length"] = "3"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []ssp.Data{
+				{Db: "users.name", Dt: 0, Formatter: nil},
+				{Db: "animal.name", Dt: 1, Formatter: nil},
+				{Db: "name", Dt: 2, Formatter: nil},
+				{Db: "beast.name", Dt: 3, Formatter: nil},
+			}
+			whereResult := make([]string, 0)
+
+			whereJoin := make([]ssp.JoinData, 0)
+
+			whereJoin = append(whereJoin, ssp.JoinData{
+				Table: "pets",
+				Alias: "animal",
+				Query: "left join pets AS animal on animal.master_id = users.uuid",
+			})
+
+			whereJoin = append(whereJoin, ssp.JoinData{
+				Table: "pets",
+				Alias: "beast",
+				Query: "left join pets AS beast on beast.master_id = users.uuid",
+			})
+
+			whereAll := make([]string, 0)
+
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(62))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(6)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Juan"
+			row["1"] = "Cerverus"
+			row["2"] = "Juan"
+			row["3"] = "Cerverus"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "JuAn"
+			row["1"] = "Mikey"
+			row["2"] = "JuAn"
+			row["3"] = "Mikey"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "Joaquin"
+			row["1"] = "Epona"
+			row["2"] = "Joaquin"
+			row["3"] = "Epona"
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+
 		It("Join search test", func() {
 
 			mapa := make(map[string]string)
