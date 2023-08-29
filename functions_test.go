@@ -122,7 +122,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
-			whereJoin := make(map[string]string, 0)
+			whereJoin := make([]ssp.JoinData, 0)
 
 			whereAll := make([]string, 0)
 			whereAll = append(whereAll, "fun = '1'")
@@ -165,7 +165,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereResult := make([]string, 0)
 			whereResult = append(whereResult, "fun = '1'")
 
-			whereJoin := make(map[string]string, 0)
+			whereJoin := make([]ssp.JoinData, 0)
 			whereAll := make([]string, 0)
 
 			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
@@ -208,8 +208,13 @@ func ComplexFunctionTest(db *gorm.DB) {
 			}
 			whereResult := make([]string, 0)
 
-			whereJoin := make(map[string]string, 0)
-			whereJoin["pets"] = "left join pets on pets.master_id = users.uuid"
+			whereJoin := make([]ssp.JoinData, 0)
+
+			whereJoin = append(whereJoin, ssp.JoinData{
+				Table: "pets",
+				Alias: "",
+				Query: "left join pets on pets.master_id = users.uuid",
+			})
 
 			whereAll := make([]string, 0)
 
@@ -261,8 +266,13 @@ func ComplexFunctionTest(db *gorm.DB) {
 			}
 			whereResult := make([]string, 0)
 
-			whereJoin := make(map[string]string, 0)
-			whereJoin["pets"] = "left join pets on pets.master_id = users.uuid"
+			whereJoin := make([]ssp.JoinData, 0)
+
+			whereJoin = append(whereJoin, ssp.JoinData{
+				Table: "pets",
+				Alias: "",
+				Query: "left join pets on pets.master_id = users.uuid",
+			})
 
 			whereAll := make([]string, 0)
 
