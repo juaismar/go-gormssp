@@ -86,7 +86,7 @@ func (c *User) Pagination() {
     //whereAll is a WHERE condition to apply to all queries
     var whereResult []string
     var whereAll []string
-    var whereJoin = make(map[string]string, 0)
+    var whereJoin = make([]SSP.JoinData, 0)
     whereAll = append(whereAll, "deleted_at IS NULL")
 
     c.Data["json"], _ = SSP.Complex(c, model.ORM, "events", columns, whereResult, whereAll, whereJoin)
