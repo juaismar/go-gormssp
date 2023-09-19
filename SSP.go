@@ -8,23 +8,17 @@ import (
 	"strings"
 	"time"
 
-	//"github.com/juaismar/go-gormssp/dialects/example/example"
+	dialects "github.com/juaismar/go-gormssp/dialects"
+	postgres "github.com/juaismar/go-gormssp/dialects/postgres"
+	sqlite "github.com/juaismar/go-gormssp/dialects/sqlite"
+	sqlserver "github.com/juaismar/go-gormssp/dialects/sqlserver"
 
-	"github.com/juaismar/go-gormssp/dialects/postgresql"
 	"gorm.io/gorm"
 )
 
 var dialect = ""
 
-type DialectFunctions struct {
-	/* 1 param is column name in ddbb
-	2 param must be "asc" or "desc"
-	3 param is the column type array for cehck type
-	return a sql string*/
-	Order func(string, string, []*sql.ColumnType) string
-}
-
-var myDialectFunction *DialectFunctions
+var myDialectFunction *dialects.DialectFunctions
 
 // Data is a line in map that link the database field with datatable field
 type Data struct {
@@ -63,7 +57,7 @@ func Simple(c Controller, conn *gorm.DB,
 	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
 	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 
@@ -110,7 +104,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
 	whereResultFlated := flated(whereResult)
@@ -175,10 +169,13 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 func selectDialect(conn *gorm.DB) {
 	dialect = conn.Dialector.Name()
 	switch conn.Dialector.Name() {
-	//case "example":
-	//	myDialectFunction = example.ExampleFunctions()
-	case "postgresql":
-		myDialectFunction = postgresql.ExampleFunctions()
+	case "postgres":
+		myDialectFunction = postgres.ExampleFunctions()
+	case "sqlite", "sqlite3":
+		myDialectFunction = sqlite.ExampleFunctions()
+	case "sqlserver":
+		myDialectFunction = sqlserver.ExampleFunctions()
+		//TODO default return error
 	}
 
 }
@@ -692,17 +689,6 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []JoinData) (
 
 	defer rows.Close()
 	return columnsType, nil
-}
-
-func dbConfig(conn *gorm.DB) {
-	if isSQLite(dialect) {
-		conn.Exec("PRAGMA case_sensitive_like = ON;")
-	}
-}
-
-func isSQLite(dialectName string) bool {
-	return dialectName == "sqlite" ||
-		dialectName == "sqlite3"
 }
 
 func isNumeric(column string, columnsType []*sql.ColumnType) bool {
