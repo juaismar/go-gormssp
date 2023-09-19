@@ -8,10 +8,23 @@ import (
 	"strings"
 	"time"
 
+	//"github.com/juaismar/go-gormssp/dialects/example/example"
+
+	"github.com/juaismar/go-gormssp/dialects/postgresql"
 	"gorm.io/gorm"
 )
 
 var dialect = ""
+
+type DialectFunctions struct {
+	/* 1 param is column name in ddbb
+	2 param must be "asc" or "desc"
+	3 param is the column type array for cehck type
+	return a sql string*/
+	Order func(string, string, []*sql.ColumnType) string
+}
+
+var myDialectFunction *DialectFunctions
 
 // Data is a line in map that link the database field with datatable field
 type Data struct {
@@ -47,6 +60,7 @@ func Simple(c Controller, conn *gorm.DB,
 	columns []Data) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
+	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
 	dbConfig(conn)
@@ -93,6 +107,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
+	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
 	dbConfig(conn)
@@ -155,6 +170,17 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
 		Where(whereAllFlated).Count(&responseJSON.RecordsTotal).Error
 
 	return
+}
+
+func selectDialect(conn *gorm.DB) {
+	dialect = conn.Dialector.Name()
+	switch conn.Dialector.Name() {
+	//case "example":
+	//	myDialectFunction = example.ExampleFunctions()
+	case "postgresql":
+		myDialectFunction = postgresql.ExampleFunctions()
+	}
+
 }
 
 func dataOutput(columns []Data, rows *sql.Rows) ([]interface{}, error) {
@@ -394,7 +420,7 @@ func order(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db 
 					columnIdxTittle = fmt.Sprintf("order[%d][dir]", i)
 					requestColumnData = c.GetString(columnIdxTittle)
 
-					query := checkOrderDialect(column.Db, requestColumnData, columnsType)
+					query := myDialectFunction.Order(column.Db, requestColumnData, columnsType)
 
 					db = db.Order(query)
 				} else {
@@ -405,37 +431,6 @@ func order(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db 
 			}
 		}
 		return db
-	}
-}
-
-func checkOrderDialect(column, order string, columnsType []*sql.ColumnType) string {
-	const asc = "ASC NULLS FIRST"
-	const desc = "DESC NULLS LAST"
-
-	switch {
-	case isSQLite(dialect) && !(isNumeric(column, columnsType) || isDatetime(column, columnsType)):
-		if order == "asc" {
-			return fmt.Sprintf("%s %s", column, desc)
-		}
-		return fmt.Sprintf("%s %s", column, asc)
-	case dialect == "sqlserver":
-		if isNumeric(column, columnsType) || isDatetime(column, columnsType) {
-			if order == "asc" {
-				return fmt.Sprintf("%s ASC", column)
-			}
-			return fmt.Sprintf("%s DESC", column)
-		}
-		if order == "asc" {
-			//(CASE WHEN [Order] IS NULL THEN 0 ELSE 1 END), [Order] ASC
-			return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS ASC", column)
-		}
-		//(CASE WHEN [Order] IS NULL THEN 1 ELSE 0 END), [Order] DESC
-		return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS DESC", column)
-	default:
-		if order == "asc" {
-			return fmt.Sprintf("%s %s", column, asc)
-		}
-		return fmt.Sprintf("%s %s", column, desc)
 	}
 }
 
