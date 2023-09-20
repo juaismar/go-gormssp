@@ -2,6 +2,7 @@ package dialectBase
 
 import (
 	"database/sql"
+	"reflect"
 
 	"gorm.io/gorm"
 )
@@ -28,6 +29,8 @@ type DialectFunctions struct {
 	DBConfig func(*gorm.DB)
 
 	BindingTypesQuery func(string, string, string, *sql.ColumnType, bool, Data) (string, interface{})
+
+	ParseData func(string, string, interface{}, reflect.Type) (interface{}, error)
 }
 
 /*
@@ -142,6 +145,58 @@ func regExp(columndb, value string) (string, string) {
 		return fmt.Sprintf("%s LIKE ?", columndb), value
 	default:
 		return fmt.Sprintf("%s ~* ?", columndb), value
+	}
+}
+*/
+
+/*
+
+func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text":
+		return val.(string), nil
+	case "int":
+		switch vType.String() {
+		case "string":
+			return val.(string), nil
+		default:
+			return val.(int64), nil
+		}
+	case "NUMERIC", "REAL", "FLOAT":
+		switch vType.String() {
+		case "[]uint8":
+			return strconv.ParseFloat(string(val.([]uint8)), 64)
+		case "string":
+			return strconv.ParseFloat(val.(string), 64)
+		case "float64":
+			return val.(float64), nil
+		default:
+			return val, nil
+		}
+	case "bool", "BOOL", "numeric", "BIT":
+		switch vType.String() {
+		case "int64":
+			return val.(int64) == 1, nil
+		case "bool":
+			return val.(bool), nil
+		default:
+			return val, nil
+		}
+
+	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET", "DATETIME":
+		return val.(time.Time), nil
+	case "UUID", "uuid", "blob":
+		switch vType.String() {
+		case "[]uint8":
+			return string(val.([]uint8)), nil
+		case "string":
+			return val, nil
+		default:
+			return val, nil
+		}
+	default:
+		fmt.Printf("(006) GORMSSP New type: %v for key: %v\n", searching, key)
+		return val, nil
 	}
 }
 */

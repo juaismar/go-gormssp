@@ -3,8 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	dialects "github.com/juaismar/go-gormssp/dialects"
 	"gorm.io/gorm"
@@ -15,6 +17,7 @@ func ExampleFunctions() *dialects.DialectFunctions {
 		Order:             checkOrder,
 		DBConfig:          dbConfig,
 		BindingTypesQuery: bindingTypesQuery,
+		ParseData:         parseData,
 	}
 }
 
@@ -78,6 +81,105 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 	default:
 		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
 		return "", ""
+	}
+}
+
+func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+	switch clearSearching(searching) {
+
+	case "string", "TEXT", "varchar", "text":
+		return val.(string), nil
+	case "int":
+		switch vType.String() {
+		case "string":
+			return val.(string), nil
+		default:
+			return val.(int64), nil
+		}
+	case "NUMERIC", "REAL", "FLOAT":
+		switch vType.String() {
+		case "[]uint8":
+			return strconv.ParseFloat(string(val.([]uint8)), 64)
+		case "string":
+			return strconv.ParseFloat(val.(string), 64)
+		case "float64":
+			return val.(float64), nil
+		default:
+			return val, nil
+		}
+	case "bool", "BOOL", "numeric", "BIT":
+		switch vType.String() {
+		case "int64":
+			return val.(int64) == 1, nil
+		case "bool":
+			return val.(bool), nil
+		default:
+			return val, nil
+		}
+
+	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET", "DATETIME":
+		return val.(time.Time), nil
+	case "UUID", "uuid", "blob":
+		switch vType.String() {
+		case "[]uint8":
+			return string(val.([]uint8)), nil
+		case "string":
+			return val, nil
+		default:
+			return val, nil
+		}
+	default:
+		fmt.Printf("(006) GORMSSP New type: %v for key: %v\n", searching, key)
+		return val, nil
+	}
+}
+
+func parseData(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text":
+		return val.(string), nil
+	case "int":
+		switch vType.String() {
+		case "string":
+			return val.(string), nil
+		default:
+			return val.(int64), nil
+		}
+	case "NUMERIC", "REAL", "FLOAT":
+		switch vType.String() {
+		case "[]uint8":
+			return strconv.ParseFloat(string(val.([]uint8)), 64)
+		case "string":
+			return strconv.ParseFloat(val.(string), 64)
+		case "float64":
+			return val.(float64), nil
+		default:
+			return val, nil
+		}
+	case "bool", "BOOL", "numeric", "BIT":
+		switch vType.String() {
+		case "int64":
+			return val.(int64) == 1, nil
+		case "bool":
+			return val.(bool), nil
+		default:
+			return val, nil
+		}
+
+	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET", "DATETIME":
+		return val.(time.Time), nil
+	case "UUID", "uuid", "blob":
+		switch vType.String() {
+		case "[]uint8":
+			return string(val.([]uint8)), nil
+		case "string":
+			return val, nil
+		default:
+			return val, nil
+		}
+	default:
+		fmt.Printf("(006) GORMSSP New type: %v for key: %v\n", searching, key)
+		return val, nil
 	}
 }
 

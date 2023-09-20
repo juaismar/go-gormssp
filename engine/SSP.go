@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
 	dialects "github.com/juaismar/go-gormssp/dialects"
 	postgres "github.com/juaismar/go-gormssp/dialects/postgres"
@@ -163,7 +162,6 @@ func selectDialect(conn *gorm.DB) {
 		myDialectFunction = sqlserver.ExampleFunctions()
 		//TODO default return error
 	}
-
 }
 
 func dataOutput(columns []dialects.Data, rows *sql.Rows) ([]interface{}, error) {
@@ -192,7 +190,7 @@ func dataOutput(columns []dialects.Data, rows *sql.Rows) ([]interface{}, error) 
 			}
 
 			db := strings.Replace(column.Db, "\"", "", -1)
-			// Is there a formatter?
+
 			if column.Formatter != nil {
 				var err error
 				row[dt], err = column.Formatter(fields[db], fields)
@@ -502,7 +500,7 @@ func getFields(rows *sql.Rows) (map[string]interface{}, error) {
 		}
 		vType := reflect.TypeOf(val)
 		searching := columnsType[i].DatabaseTypeName()
-		value[key], err = getFieldsSearch(searching, key, val, vType)
+		value[key], err = myDialectFunction.ParseData(searching, key, val, vType)
 		if err != nil {
 			return nil, err
 		}
@@ -521,56 +519,6 @@ func clearSearching(searching string) string {
 		return "int"
 	default:
 		return searching
-	}
-}
-
-func getFieldsSearch(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
-	switch clearSearching(searching) {
-
-	case "string", "TEXT", "varchar", "text":
-		return val.(string), nil
-	case "int":
-		switch vType.String() {
-		case "string":
-			return val.(string), nil
-		default:
-			return val.(int64), nil
-		}
-	case "NUMERIC", "REAL", "FLOAT":
-		switch vType.String() {
-		case "[]uint8":
-			return strconv.ParseFloat(string(val.([]uint8)), 64)
-		case "string":
-			return strconv.ParseFloat(val.(string), 64)
-		case "float64":
-			return val.(float64), nil
-		default:
-			return val, nil
-		}
-	case "bool", "BOOL", "numeric", "BIT":
-		switch vType.String() {
-		case "int64":
-			return val.(int64) == 1, nil
-		case "bool":
-			return val.(bool), nil
-		default:
-			return val, nil
-		}
-
-	case "TIMESTAMPTZ", "datetime", "DATETIMEOFFSET", "DATETIME":
-		return val.(time.Time), nil
-	case "UUID", "uuid", "blob":
-		switch vType.String() {
-		case "[]uint8":
-			return string(val.([]uint8)), nil
-		case "string":
-			return val, nil
-		default:
-			return val, nil
-		}
-	default:
-		fmt.Printf("(006) GORMSSP New type: %v for key: %v\n", searching, key)
-		return val, nil
 	}
 }
 
