@@ -10,7 +10,10 @@ func DataSimple(c Controller, conn *gorm.DB,
 	table string,
 	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
 
-	selectDialect(conn)
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
@@ -41,7 +44,10 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []dialects.D
 	whereAll []string,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
-	selectDialect(conn)
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)

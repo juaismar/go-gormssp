@@ -23,7 +23,7 @@ type JoinData struct {
 	Query string //case sensitive - optional default false
 }
 
-// MessageDataTable is theresponse object
+// MessageDataTable is the response object
 type MessageDataTable struct {
 	Draw            int           `json:"draw"`
 	RecordsTotal    int64         `json:"recordsTotal"`
@@ -41,7 +41,10 @@ func Simple(c Controller, conn *gorm.DB,
 	table string,
 	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
 
-	selectDialect(conn)
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
@@ -87,7 +90,10 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 	whereAll []string,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
-	selectDialect(conn)
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
@@ -152,7 +158,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 	return
 }
 
-func selectDialect(conn *gorm.DB) {
+func selectDialect(conn *gorm.DB) (err error) {
 	switch conn.Dialector.Name() {
 	case "postgres":
 		myDialectFunction = postgres.ExampleFunctions()
@@ -160,8 +166,10 @@ func selectDialect(conn *gorm.DB) {
 		myDialectFunction = sqlite.ExampleFunctions()
 	case "sqlserver":
 		myDialectFunction = sqlserver.ExampleFunctions()
-		//TODO default return error
+	default:
+		err = fmt.Errorf("Dialect '%s' not fount", conn.Dialector.Name())
 	}
+	return
 }
 
 func dataOutput(columns []dialects.Data, rows *sql.Rows) ([]interface{}, error) {
@@ -374,7 +382,6 @@ func filterIndividual(c Controller, columns []dialects.Data, columnsType []*sql.
 
 }
 
-// Refactor this
 func order(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
