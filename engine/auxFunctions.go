@@ -40,6 +40,7 @@ func isReserved(text string) bool {
 	return false
 }
 
+// todo set reserved word in dialects
 var reservedWords = [825]string{
 	"A",
 	"ABORT",
