@@ -1,14 +1,14 @@
 package engine
 
 import (
-	dialects "github.com/juaismar/go-gormssp/dialects"
+	"github.com/juaismar/go-gormssp/structs"
 	"gorm.io/gorm"
 )
 
 // Simple is a main method, externally called, only return Data
 func DataSimple(c Controller, conn *gorm.DB,
 	table string,
-	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
+	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
 	err = selectDialect(conn)
 	if err != nil {
@@ -18,7 +18,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0))
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -39,10 +39,10 @@ func DataSimple(c Controller, conn *gorm.DB,
 }
 
 // Complex is a main method, externally called
-func DataComplex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
+func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
+	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
 
 	err = selectDialect(conn)
 	if err != nil {

@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	dialects "github.com/juaismar/go-gormssp/dialects"
+	"github.com/juaismar/go-gormssp/structs"
 	"gorm.io/gorm"
 )
 
-func ExampleFunctions() *dialects.DialectFunctions {
-	return &dialects.DialectFunctions{
+func ExampleFunctions() *structs.DialectFunctions {
+	return &structs.DialectFunctions{
 		Order:             checkOrder,
 		DBConfig:          dbConfig,
 		BindingTypesQuery: bindingTypesQuery,
@@ -43,7 +43,7 @@ func dbConfig(conn *gorm.DB) {
 	conn.Exec("PRAGMA case_sensitive_like = ON;")
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column dialects.Data) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf

@@ -7,29 +7,15 @@ import (
 	"strconv"
 	"strings"
 
-	dialects "github.com/juaismar/go-gormssp/dialects"
 	postgres "github.com/juaismar/go-gormssp/dialects/postgres"
 	sqlite "github.com/juaismar/go-gormssp/dialects/sqlite"
 	sqlserver "github.com/juaismar/go-gormssp/dialects/sqlserver"
+	"github.com/juaismar/go-gormssp/structs"
 
 	"gorm.io/gorm"
 )
 
-var myDialectFunction *dialects.DialectFunctions
-
-type JoinData struct {
-	Table string //name of column
-	Alias string //id of column in client (int or string)
-	Query string //case sensitive - optional default false
-}
-
-// MessageDataTable is the response object
-type MessageDataTable struct {
-	Draw            int           `json:"draw"`
-	RecordsTotal    int64         `json:"recordsTotal"`
-	RecordsFiltered int64         `json:"recordsFiltered"`
-	Data            []interface{} `json:"data,nilasempty"`
-}
+var myDialectFunction *structs.DialectFunctions
 
 // Controller emulate the beego controller
 type Controller interface {
@@ -39,7 +25,7 @@ type Controller interface {
 // Simple is a main method, externally called
 func Simple(c Controller, conn *gorm.DB,
 	table string,
-	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
+	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
 	err = selectDialect(conn)
 	if err != nil {
@@ -49,7 +35,7 @@ func Simple(c Controller, conn *gorm.DB,
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0))
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -85,10 +71,10 @@ func Simple(c Controller, conn *gorm.DB,
 }
 
 // Complex is a main method, externally called
-func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
+func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
+	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
 
 	err = selectDialect(conn)
 	if err != nil {
@@ -172,7 +158,7 @@ func selectDialect(conn *gorm.DB) (err error) {
 	return
 }
 
-func dataOutput(columns []dialects.Data, rows *sql.Rows) ([]interface{}, error) {
+func dataOutput(columns []structs.Data, rows *sql.Rows) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 
 	for rows.Next() {
@@ -235,7 +221,7 @@ func Flated(whereArray []string) string {
 	return query
 }
 
-func buildSelect(table string, join []JoinData, conn *gorm.DB) (query string, err error) {
+func buildSelect(table string, join []structs.JoinData, conn *gorm.DB) (query string, err error) {
 	query = fmt.Sprintf("%s.*", table)
 	if len(join) == 0 {
 		return
@@ -256,14 +242,14 @@ func buildSelect(table string, join []JoinData, conn *gorm.DB) (query string, er
 }
 
 func addFieldsSelect(table, alias string, conn *gorm.DB) (query string, err error) {
-	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0))
 	for _, columnInfo := range columnsType {
 		query += fmt.Sprintf(", \"%s\".\"%s\" AS \"%s.%s\"", alias, columnInfo.Name(), alias, columnInfo.Name())
 	}
 	return
 }
 
-func setJoins(joins []JoinData) func(db *gorm.DB) *gorm.DB {
+func setJoins(joins []structs.JoinData) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		for _, join := range joins {
 			db = db.Joins(join.Query)
@@ -299,7 +285,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 }
 
 // database func
-func filterGlobal(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
+func filterGlobal(c Controller, columns []structs.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
 	str := c.GetString("search[value]")
 	if str == "" {
@@ -340,7 +326,7 @@ func filterGlobal(c Controller, columns []dialects.Data, columnsType []*sql.Colu
 
 }
 
-func filterIndividual(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
+func filterIndividual(c Controller, columns []structs.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
 	// Individual column filtering
 	var i int
@@ -382,7 +368,7 @@ func filterIndividual(c Controller, columns []dialects.Data, columnsType []*sql.
 
 }
 
-func order(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
+func order(c Controller, columns []structs.Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -442,7 +428,7 @@ func limit(c Controller) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func Search(column []dialects.Data, keyColumnsI string) int {
+func Search(column []structs.Data, keyColumnsI string) int {
 	var i int
 	for i = 0; i < len(column); i++ {
 		data := column[i]
@@ -465,7 +451,7 @@ func Search(column []dialects.Data, keyColumnsI string) int {
 }
 
 // check if searchable field is string
-func bindingTypes(value string, columnsType []*sql.ColumnType, column dialects.Data, isRegEx bool) (string, interface{}) {
+func bindingTypes(value string, columnsType []*sql.ColumnType, column structs.Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
 		if strings.Replace(columndb, "\"", "", -1) == columnInfo.Name() {
@@ -539,7 +525,7 @@ func makeResultReceiver(length int) []interface{} {
 	return result
 }
 
-func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []JoinData) ([]*sql.ColumnType, error) {
+func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData) ([]*sql.ColumnType, error) {
 	rows, err := db.Select(selectQuery).
 		Table(table).
 		Scopes(

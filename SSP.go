@@ -1,8 +1,8 @@
 package ssp
 
 import (
-	dialects "github.com/juaismar/go-gormssp/dialects"
 	engine "github.com/juaismar/go-gormssp/engine"
+	"github.com/juaismar/go-gormssp/structs"
 )
 
 // Functions exported.
@@ -12,6 +12,6 @@ var DataSimple = engine.DataSimple
 var DataComplex = engine.DataComplex
 
 // Models exported.
-type JoinData = engine.JoinData
-type MessageDataTable = engine.MessageDataTable
-type Data = dialects.Data
+type JoinData = structs.JoinData
+type MessageDataTable = structs.MessageDataTable
+type Data = structs.Data
