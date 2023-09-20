@@ -156,6 +156,7 @@ func selectDialect(conn *gorm.DB) (err error) {
 		err = fmt.Errorf("Dialect '%s' not fount", conn.Dialector.Name())
 		return
 	}
+	//DELETEME
 	ReservedWords = append(ReservedWords, myDialectFunction.ReservedWords...)
 	return
 }
