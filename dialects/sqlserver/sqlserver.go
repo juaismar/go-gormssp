@@ -18,8 +18,11 @@ func TheFunctions() *structs.DialectFunctions {
 		DBConfig:          dbConfig,
 		BindingTypesQuery: bindingTypesQuery,
 		ParseData:         parseData,
+		ReservedWords:     reservedWords,
 	}
 }
+
+var reservedWords = []string{}
 
 // Exported functions
 func checkOrder(column, order string, columnsType []*sql.ColumnType) string {

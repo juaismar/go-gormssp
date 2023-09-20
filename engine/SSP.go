@@ -154,7 +154,9 @@ func selectDialect(conn *gorm.DB) (err error) {
 		myDialectFunction = sqlserver.TheFunctions()
 	default:
 		err = fmt.Errorf("Dialect '%s' not fount", conn.Dialector.Name())
+		return
 	}
+	ReservedWords = append(ReservedWords, myDialectFunction.ReservedWords...)
 	return
 }
 

@@ -42,4 +42,7 @@ type DialectFunctions struct {
 	retrun a error to return
 	*/
 	ParseData func(string, string, interface{}, reflect.Type) (interface{}, error)
+
+	/*Words to be scaped*/
+	ReservedWords []string
 }
