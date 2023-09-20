@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	postgres "github.com/juaismar/go-gormssp/dialects/postgres"
-	sqlite "github.com/juaismar/go-gormssp/dialects/sqlite"
-	sqlserver "github.com/juaismar/go-gormssp/dialects/sqlserver"
+	"github.com/juaismar/go-gormssp/dialects/postgres"
+	"github.com/juaismar/go-gormssp/dialects/sqlite"
+	"github.com/juaismar/go-gormssp/dialects/sqlserver"
 	"github.com/juaismar/go-gormssp/structs"
 
 	"gorm.io/gorm"

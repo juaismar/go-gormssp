@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	ssp "github.com/juaismar/go-gormssp"
 	engine "github.com/juaismar/go-gormssp/engine"
 	"github.com/juaismar/go-gormssp/structs"
 
@@ -128,7 +129,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereAll := make([]string, 0)
 			whereAll = append(whereAll, "fun = '1'")
 
-			result, err := engine.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -169,7 +170,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereJoin := make([]structs.JoinData, 0)
 			whereAll := make([]string, 0)
 
-			result, err := engine.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -219,7 +220,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := engine.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -281,7 +282,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := engine.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -343,7 +344,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := engine.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -386,7 +387,7 @@ func RegExpTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -420,7 +421,7 @@ func RegExpTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -456,7 +457,7 @@ func RegExpTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -492,7 +493,7 @@ func RegExpTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "age", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -528,7 +529,7 @@ func RegExpTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "money", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -575,7 +576,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "age", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -619,7 +620,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "candies", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -659,7 +660,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "toys", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -703,7 +704,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "fun", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -751,7 +752,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -789,7 +790,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -849,7 +850,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -887,7 +888,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -944,7 +945,7 @@ func Types(db *gorm.DB) {
 						return time, err
 					}},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(err).To(BeNil())
@@ -977,7 +978,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "uuid", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -996,7 +997,7 @@ func Types(db *gorm.DB) {
 	})
 }
 
-// SimpleFunctionTest test for engine.Simplex method
+// SimpleFunctionTest test for ssp.Simplex method
 func SimpleFunctionTest(db *gorm.DB) {
 	Describe("Simple and basic features", func() {
 		It("returns from 0 to 4", func() {
@@ -1013,7 +1014,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1051,7 +1052,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
@@ -1096,7 +1097,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
@@ -1135,7 +1136,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(63))
@@ -1190,7 +1191,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "instrument", Dt: 1, Formatter: nil},
 					{Db: "age", Dt: 2, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1236,7 +1237,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1282,7 +1283,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "instrument", Dt: 1, Formatter: nil},
 				{Db: "age", Dt: 2, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1317,7 +1318,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: "supername", Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1362,7 +1363,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1402,7 +1403,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1441,7 +1442,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Cs: true, Formatter: nil},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -1474,7 +1475,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 						return fmt.Sprintf("PREFIX_%v_%v", data, row["age"]), nil
 					}},
 				}
-				result, err := engine.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns)
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
@@ -1525,7 +1526,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1571,7 +1572,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1610,7 +1611,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "toys", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1659,7 +1660,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 		columns := []structs.Data{
 			{Db: "birth_date", Dt: 0, Formatter: nil},
 		}
-		result, err := engine.Simple(&c, db, "users", columns)
+		result, err := ssp.Simple(&c, db, "users", columns)
 
 		Expect(err).To(BeNil())
 		Expect(result.Draw).To(Equal(64))
@@ -1709,7 +1710,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "\"Favorite song\"", Dt: 1, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1747,7 +1748,7 @@ func Errors(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "bike", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 
@@ -1780,7 +1781,7 @@ func Errors(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "bike", Dt: nil, Formatter: nil},
 			}
-			_, err := engine.Simple(&c, db, "users", columns)
+			_, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(fmt.Sprintf("%v", err)).To(Equal("Dt cannot be nil in column[0]"))
 		})
@@ -1806,7 +1807,7 @@ func Errors(db *gorm.DB) {
 				}},
 			}
 
-			_, err := engine.Simple(&c, db, "users", columns)
+			_, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).ToNot(BeNil())
 		})
@@ -1835,7 +1836,7 @@ func Errors(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "end", Dt: 1, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
@@ -1870,7 +1871,7 @@ func Errors(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
-			result, err := engine.Simple(&c, db, "users", columns)
+			result, err := ssp.Simple(&c, db, "users", columns)
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))

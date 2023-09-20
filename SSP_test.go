@@ -1,7 +1,7 @@
 package ssp_test
 
 import (
-	test "github.com/juaismar/go-gormssp/test"
+	"github.com/juaismar/go-gormssp/test"
 	"github.com/juaismar/go-gormssp/test/dbs/postgres"
 	"github.com/juaismar/go-gormssp/test/dbs/sqlite"
 	"github.com/juaismar/go-gormssp/test/dbs/sqlserver"
