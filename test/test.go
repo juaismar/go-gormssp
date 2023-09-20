@@ -1,10 +1,12 @@
-package ssp_test
+package test
 
 import (
 	"fmt"
 	"time"
 
 	ssp "github.com/juaismar/go-gormssp"
+	engine "github.com/juaismar/go-gormssp/engine"
+	"github.com/juaismar/go-gormssp/structs"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,7 +32,7 @@ func FunctionsTest() {
 
 			var whereArray []string
 
-			result := ssp.Flated(whereArray)
+			result := engine.Flated(whereArray)
 
 			Expect(result).To(Equal(""))
 		})
@@ -39,7 +41,7 @@ func FunctionsTest() {
 			var whereArray []string
 			whereArray = append(whereArray, "number = 1")
 
-			result := ssp.Flated(whereArray)
+			result := engine.Flated(whereArray)
 
 			Expect(result).To(Equal("number = 1"))
 		})
@@ -49,7 +51,7 @@ func FunctionsTest() {
 			whereArray = append(whereArray, "number = 1")
 			whereArray = append(whereArray, "name = 'John'")
 
-			result := ssp.Flated(whereArray)
+			result := engine.Flated(whereArray)
 
 			Expect(result).To(Equal("number = 1 AND name = 'John'"))
 		})
@@ -57,45 +59,45 @@ func FunctionsTest() {
 	Describe("search", func() {
 		It("returns -1", func() {
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "role", Dt: "role", Formatter: nil},
 				{Db: "email", Dt: 2, Formatter: nil},
 			}
-			result := ssp.Search(columns, "")
+			result := engine.Search(columns, "")
 
 			Expect(result).To(Equal(-1))
 		})
 		It("returns -1", func() {
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "role", Dt: "role", Formatter: nil},
 				{Db: "email", Dt: 2, Formatter: nil},
 			}
-			result := ssp.Search(columns, "instrument")
+			result := engine.Search(columns, "instrument")
 
 			Expect(result).To(Equal(-1))
 		})
 		It("returns 1", func() {
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "role", Dt: "role", Formatter: nil},
 				{Db: "email", Dt: 2, Formatter: nil},
 			}
-			result := ssp.Search(columns, "role")
+			result := engine.Search(columns, "role")
 
 			Expect(result).To(Equal(1))
 		})
 		It("returns 0", func() {
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "role", Dt: "role", Formatter: nil},
 				{Db: "email", Dt: 2, Formatter: nil},
 			}
-			result := ssp.Search(columns, "0")
+			result := engine.Search(columns, "0")
 
 			Expect(result).To(Equal(0))
 		})
@@ -118,11 +120,11 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
-			whereJoin := make([]ssp.JoinData, 0)
+			whereJoin := make([]structs.JoinData, 0)
 
 			whereAll := make([]string, 0)
 			whereAll = append(whereAll, "fun = '1'")
@@ -159,13 +161,13 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
 			whereResult = append(whereResult, "fun = '1'")
 
-			whereJoin := make([]ssp.JoinData, 0)
+			whereJoin := make([]structs.JoinData, 0)
 			whereAll := make([]string, 0)
 
 			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
@@ -201,16 +203,16 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "users.name", Dt: 0, Formatter: nil},
 				{Db: "pets.name", Dt: 1, Formatter: nil},
 				{Db: "name", Dt: 2, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
 
-			whereJoin := make([]ssp.JoinData, 0)
+			whereJoin := make([]structs.JoinData, 0)
 
-			whereJoin = append(whereJoin, ssp.JoinData{
+			whereJoin = append(whereJoin, structs.JoinData{
 				Table: "pets",
 				Alias: "",
 				Query: "left join pets on pets.master_id = users.uuid",
@@ -256,7 +258,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "users.name", Dt: 0, Formatter: nil},
 				{Db: "animal.name", Dt: 1, Formatter: nil},
 				{Db: "name", Dt: 2, Formatter: nil},
@@ -264,15 +266,15 @@ func ComplexFunctionTest(db *gorm.DB) {
 			}
 			whereResult := make([]string, 0)
 
-			whereJoin := make([]ssp.JoinData, 0)
+			whereJoin := make([]structs.JoinData, 0)
 
-			whereJoin = append(whereJoin, ssp.JoinData{
+			whereJoin = append(whereJoin, structs.JoinData{
 				Table: "pets",
 				Alias: "animal",
 				Query: "left join pets AS animal on animal.master_id = users.uuid",
 			})
 
-			whereJoin = append(whereJoin, ssp.JoinData{
+			whereJoin = append(whereJoin, structs.JoinData{
 				Table: "pets",
 				Alias: "beast",
 				Query: "left join pets AS beast on beast.master_id = users.uuid",
@@ -325,16 +327,16 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "users.name", Dt: 0, Formatter: nil},
 				{Db: "pets.name", Dt: 1, Formatter: nil},
 				{Db: "name", Dt: 2, Formatter: nil},
 			}
 			whereResult := make([]string, 0)
 
-			whereJoin := make([]ssp.JoinData, 0)
+			whereJoin := make([]structs.JoinData, 0)
 
-			whereJoin = append(whereJoin, ssp.JoinData{
+			whereJoin = append(whereJoin, structs.JoinData{
 				Table: "pets",
 				Alias: "",
 				Query: "left join pets on pets.master_id = users.uuid",
@@ -381,7 +383,7 @@ func RegExpTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
@@ -416,7 +418,7 @@ func RegExpTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -452,7 +454,7 @@ func RegExpTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -488,7 +490,7 @@ func RegExpTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "age", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -524,7 +526,7 @@ func RegExpTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "money", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -570,7 +572,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "age", Dt: 1, Formatter: nil},
 				}
@@ -614,7 +616,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "candies", Dt: 1, Formatter: nil},
 				}
@@ -654,7 +656,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "toys", Dt: 1, Formatter: nil},
 				}
@@ -698,7 +700,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "fun", Dt: 1, Formatter: nil},
 				}
@@ -746,7 +748,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
@@ -784,7 +786,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
@@ -844,7 +846,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
@@ -882,7 +884,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
@@ -934,7 +936,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "birth_date", Dt: 0, Formatter: func(
 						data interface{}, row map[string]interface{}) (interface{}, error) {
 						time := data.(time.Time)
@@ -972,7 +974,7 @@ func Types(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "uuid", Dt: 1, Formatter: nil},
 				}
@@ -1009,7 +1011,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -1047,7 +1049,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
 				result, err := ssp.Simple(&c, db, "users", columns)
@@ -1092,7 +1094,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
 				result, err := ssp.Simple(&c, db, "users", columns)
@@ -1131,7 +1133,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
 				result, err := ssp.Simple(&c, db, "users", columns)
@@ -1184,7 +1186,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 					{Db: "age", Dt: 2, Formatter: nil},
@@ -1231,7 +1233,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
@@ -1276,7 +1278,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 				{Db: "age", Dt: 2, Formatter: nil},
@@ -1313,7 +1315,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: "supername", Formatter: nil},
 				}
 				result, err := ssp.Simple(&c, db, "users", columns)
@@ -1357,7 +1359,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
@@ -1397,7 +1399,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
@@ -1437,7 +1439,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Cs: true, Formatter: nil},
 				}
 				result, err := ssp.Simple(&c, db, "users", columns)
@@ -1467,7 +1469,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				c := ControllerEmulated{Params: mapa}
 
-				columns := []ssp.Data{
+				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: func(
 						data interface{}, row map[string]interface{}) (interface{}, error) {
 						return fmt.Sprintf("PREFIX_%v_%v", data, row["age"]), nil
@@ -1520,7 +1522,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
@@ -1566,7 +1568,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
@@ -1606,7 +1608,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "toys", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -1655,7 +1657,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 		c := ControllerEmulated{Params: mapa}
 
-		columns := []ssp.Data{
+		columns := []structs.Data{
 			{Db: "birth_date", Dt: 0, Formatter: nil},
 		}
 		result, err := ssp.Simple(&c, db, "users", columns)
@@ -1704,7 +1706,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "\"Favorite song\"", Dt: 1, Formatter: nil},
 			}
@@ -1743,7 +1745,7 @@ func Errors(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "bike", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)
@@ -1776,7 +1778,7 @@ func Errors(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "bike", Dt: nil, Formatter: nil},
 			}
 			_, err := ssp.Simple(&c, db, "users", columns)
@@ -1796,7 +1798,7 @@ func Errors(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: func(
 					data interface{}, row map[string]interface{}) (interface{}, error) {
 					layout := "2006-01-02T15:04:05.000Z"
@@ -1830,7 +1832,7 @@ func Errors(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "end", Dt: 1, Formatter: nil},
 			}
@@ -1866,7 +1868,7 @@ func Errors(db *gorm.DB) {
 
 			c := ControllerEmulated{Params: mapa}
 
-			columns := []ssp.Data{
+			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
 			result, err := ssp.Simple(&c, db, "users", columns)

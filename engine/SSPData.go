@@ -1,20 +1,24 @@
-package ssp
+package engine
 
 import (
+	"github.com/juaismar/go-gormssp/structs"
 	"gorm.io/gorm"
 )
 
 // Simple is a main method, externally called, only return Data
 func DataSimple(c Controller, conn *gorm.DB,
 	table string,
-	columns []Data) (responseJSON MessageDataTable, err error) {
+	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
-	dialect = conn.Dialector.Name()
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
+	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0))
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -35,19 +39,22 @@ func DataSimple(c Controller, conn *gorm.DB,
 }
 
 // Complex is a main method, externally called
-func DataComplex(c Controller, conn *gorm.DB, table string, columns []Data,
+func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
+	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
 
-	dialect = conn.Dialector.Name()
+	err = selectDialect(conn)
+	if err != nil {
+		return
+	}
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
-	whereResultFlated := flated(whereResult)
-	whereAllFlated := flated(whereAll)
+	whereResultFlated := Flated(whereResult)
+	whereAllFlated := Flated(whereAll)
 
 	selectQuery, err := buildSelect(table, whereJoin, conn)
 	if err != nil {
