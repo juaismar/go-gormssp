@@ -6,17 +6,28 @@ import (
 	"gorm.io/gorm"
 )
 
+// Data is a line in map that link the database field with datatable field
+type Data struct {
+	Db        string                                                                  //name of column
+	Dt        interface{}                                                             //id of column in client (int or string)
+	Cs        bool                                                                    //case sensitive - optional default false
+	Sf        string                                                                  //Search Function - for custom functions declared in your ddbb
+	Formatter func(data interface{}, row map[string]interface{}) (interface{}, error) // - optional
+}
+
 type DialectFunctions struct {
 
 	/* Must order properly
 	1 param is column name in ddbb
 	2 param must be "asc" or "desc"
-	3 param is the column type array for cehck type
+	3 param is the column type array for check type
 	return a sql string*/
 	Order func(string, string, []*sql.ColumnType) string
 
 	/*For configure ddbb*/
 	DBConfig func(*gorm.DB)
+
+	bindingTypesQuery func(string, string, string, *sql.ColumnType, bool, Data) (string, interface{})
 }
 
 /*

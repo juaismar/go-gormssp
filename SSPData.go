@@ -1,18 +1,19 @@
 package ssp
 
 import (
+	dialects "github.com/juaismar/go-gormssp/dialects"
 	"gorm.io/gorm"
 )
 
 // Simple is a main method, externally called, only return Data
 func DataSimple(c Controller, conn *gorm.DB,
 	table string,
-	columns []Data) (responseJSON MessageDataTable, err error) {
+	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
 	columnsType, err := initBinding(conn, "*", table, make([]JoinData, 0))
 
@@ -35,7 +36,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 }
 
 // Complex is a main method, externally called
-func DataComplex(c Controller, conn *gorm.DB, table string, columns []Data,
+func DataComplex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 	whereResult []string,
 	whereAll []string,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
@@ -43,7 +44,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []Data,
 	dialect = conn.Dialector.Name()
 
 	responseJSON.Draw = drawNumber(c)
-	dbConfig(conn)
+	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
 	whereResultFlated := flated(whereResult)

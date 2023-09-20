@@ -20,15 +20,6 @@ var dialect = ""
 
 var myDialectFunction *dialects.DialectFunctions
 
-// Data is a line in map that link the database field with datatable field
-type Data struct {
-	Db        string                                                                  //name of column
-	Dt        interface{}                                                             //id of column in client (int or string)
-	Cs        bool                                                                    //case sensitive - optional default false
-	Sf        string                                                                  //Search Function - for custom functions declared in your ddbb
-	Formatter func(data interface{}, row map[string]interface{}) (interface{}, error) // - optional
-}
-
 type JoinData struct {
 	Table string //name of column
 	Alias string //id of column in client (int or string)
@@ -51,7 +42,7 @@ type Controller interface {
 // Simple is a main method, externally called
 func Simple(c Controller, conn *gorm.DB,
 	table string,
-	columns []Data) (responseJSON MessageDataTable, err error) {
+	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
 
 	dialect = conn.Dialector.Name()
 	selectDialect(conn)
@@ -95,7 +86,7 @@ func Simple(c Controller, conn *gorm.DB,
 }
 
 // Complex is a main method, externally called
-func Complex(c Controller, conn *gorm.DB, table string, columns []Data,
+func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 	whereResult []string,
 	whereAll []string,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
@@ -180,7 +171,7 @@ func selectDialect(conn *gorm.DB) {
 
 }
 
-func dataOutput(columns []Data, rows *sql.Rows) ([]interface{}, error) {
+func dataOutput(columns []dialects.Data, rows *sql.Rows) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 
 	for rows.Next() {
@@ -307,7 +298,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 }
 
 // database func
-func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
+func filterGlobal(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
 	str := c.GetString("search[value]")
 	if str == "" {
@@ -348,7 +339,7 @@ func filterGlobal(c Controller, columns []Data, columnsType []*sql.ColumnType, d
 
 }
 
-func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
+func filterIndividual(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType, db *gorm.DB) *gorm.DB {
 
 	// Individual column filtering
 	var i int
@@ -391,7 +382,7 @@ func filterIndividual(c Controller, columns []Data, columnsType []*sql.ColumnTyp
 }
 
 // Refactor this
-func order(c Controller, columns []Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
+func order(c Controller, columns []dialects.Data, columnsType []*sql.ColumnType) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -451,7 +442,7 @@ func limit(c Controller) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func search(column []Data, keyColumnsI string) int {
+func search(column []dialects.Data, keyColumnsI string) int {
 	var i int
 	for i = 0; i < len(column); i++ {
 		data := column[i]
@@ -474,7 +465,7 @@ func search(column []Data, keyColumnsI string) int {
 }
 
 // check if searchable field is string
-func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRegEx bool) (string, interface{}) {
+func bindingTypes(value string, columnsType []*sql.ColumnType, column dialects.Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
 		if strings.Replace(columndb, "\"", "", -1) == columnInfo.Name() {
@@ -486,7 +477,7 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column Data, isRe
 	return "", ""
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column Data) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column dialects.Data) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf
@@ -689,41 +680,6 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []JoinData) (
 
 	defer rows.Close()
 	return columnsType, nil
-}
-
-func isNumeric(column string, columnsType []*sql.ColumnType) bool {
-	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
-			searching := columnInfo.DatabaseTypeName()
-			return bindingTypesNumeric(searching, columnInfo)
-		}
-	}
-
-	return false
-}
-func isDatetime(column string, columnsType []*sql.ColumnType) bool {
-	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
-			searching := columnInfo.DatabaseTypeName()
-			return searching == "datetime" || searching == "TIMESTAMPTZ" || searching == "DATETIMEOFFSET" || searching == "DATETIME"
-		}
-	}
-
-	return false
-}
-
-func bindingTypesNumeric(searching string, columnInfo *sql.ColumnType) bool {
-	switch clearSearching(searching) {
-	case "string", "TEXT", "varchar", "text", "UUID", "blob", "datetime", "TIMESTAMPTZ", "DATETIMEOFFSET", "DATETIME":
-		return false
-	case "int", "REAL", "NUMERIC", "FLOAT":
-		return true
-	case "bool", "BOOL", "numeric", "BIT":
-		return true
-	default:
-		fmt.Printf("(007) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
-		return false
-	}
 }
 
 func isNil(val string) bool {
