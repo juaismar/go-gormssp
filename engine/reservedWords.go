@@ -1,5 +1,6 @@
 package engine
 
+// a list of word to be scaped, dialects can add words
 var ReservedWords = []string{
 	"A",
 	"ABORT",
