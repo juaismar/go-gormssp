@@ -1,4 +1,4 @@
-package ssp
+package engine
 
 import (
 	dialects "github.com/juaismar/go-gormssp/dialects"
@@ -47,8 +47,8 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []dialects.D
 	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
-	whereResultFlated := flated(whereResult)
-	whereAllFlated := flated(whereAll)
+	whereResultFlated := Flated(whereResult)
+	whereAllFlated := Flated(whereAll)
 
 	selectQuery, err := buildSelect(table, whereJoin, conn)
 	if err != nil {
