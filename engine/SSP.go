@@ -147,11 +147,11 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 func selectDialect(conn *gorm.DB) (err error) {
 	switch conn.Dialector.Name() {
 	case "postgres":
-		myDialectFunction = postgres.ExampleFunctions()
+		myDialectFunction = postgres.TheFunctions()
 	case "sqlite", "sqlite3":
-		myDialectFunction = sqlite.ExampleFunctions()
+		myDialectFunction = sqlite.TheFunctions()
 	case "sqlserver":
-		myDialectFunction = sqlserver.ExampleFunctions()
+		myDialectFunction = sqlserver.TheFunctions()
 	default:
 		err = fmt.Errorf("Dialect '%s' not fount", conn.Dialector.Name())
 	}

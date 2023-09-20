@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ExampleFunctions() *structs.DialectFunctions {
+func Functions() *structs.DialectFunctions {
 	return &structs.DialectFunctions{
 		Order:             checkOrder,
 		DBConfig:          dbConfig,
