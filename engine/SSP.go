@@ -16,8 +16,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var dialect = ""
-
 var myDialectFunction *dialects.DialectFunctions
 
 type JoinData struct {
@@ -44,7 +42,6 @@ func Simple(c Controller, conn *gorm.DB,
 	table string,
 	columns []dialects.Data) (responseJSON MessageDataTable, err error) {
 
-	dialect = conn.Dialector.Name()
 	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
@@ -91,7 +88,6 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 	whereAll []string,
 	whereJoin []JoinData) (responseJSON MessageDataTable, err error) {
 
-	dialect = conn.Dialector.Name()
 	selectDialect(conn)
 
 	responseJSON.Draw = drawNumber(c)
@@ -158,7 +154,6 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []dialects.Data,
 }
 
 func selectDialect(conn *gorm.DB) {
-	dialect = conn.Dialector.Name()
 	switch conn.Dialector.Name() {
 	case "postgres":
 		myDialectFunction = postgres.ExampleFunctions()
@@ -470,82 +465,11 @@ func bindingTypes(value string, columnsType []*sql.ColumnType, column dialects.D
 	for _, columnInfo := range columnsType {
 		if strings.Replace(columndb, "\"", "", -1) == columnInfo.Name() {
 			searching := columnInfo.DatabaseTypeName()
-			return bindingTypesQuery(searching, CheckReserved(columndb), value, columnInfo, isRegEx, column)
+			return myDialectFunction.BindingTypesQuery(searching, CheckReserved(columndb), value, columnInfo, isRegEx, column)
 		}
 	}
 
 	return "", ""
-}
-
-func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column dialects.Data) (string, interface{}) {
-	var fieldName = columndb
-	if column.Sf != "" { //if implement custom search function
-		fieldName = column.Sf
-	}
-
-	switch clearSearching(searching) {
-	case "string", "TEXT", "varchar", "text":
-		if isRegEx {
-			return regExp(fieldName, value)
-		}
-
-		if column.Cs {
-			if dialect == "sqlserver" {
-				return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS LIKE ?", fieldName), "%" + value + "%"
-			}
-			return fmt.Sprintf("%s LIKE ?", fieldName), "%" + value + "%"
-
-		}
-		return fmt.Sprintf("Lower(%s) LIKE ?", fieldName), "%" + strings.ToLower(value) + "%"
-	case "UUID", "blob":
-		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
-		}
-		return fmt.Sprintf("%s = ?", fieldName), value
-	case "int":
-		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
-		}
-		intval, err := strconv.Atoi(value)
-		if err != nil {
-			return "", ""
-		}
-		return fmt.Sprintf("%s = ?", fieldName), intval
-	case "bool", "BOOL", "numeric", "BIT":
-		if isNil(value) {
-			return fieldName, nil
-		}
-		boolval, _ := strconv.ParseBool(value)
-		return fieldName, boolval
-	case "REAL", "NUMERIC", "FLOAT":
-		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
-		}
-		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
-		float64val, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return "", ""
-		}
-		return fmt.Sprintf("%s = ?", fieldName), float64val
-	default:
-		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
-		return "", ""
-	}
-}
-
-func regExp(columndb, value string) (string, string) {
-	switch dialect {
-	case "sqlite", "sqlite3":
-		//TODO make regexp
-		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
-	case "postgres":
-		return fmt.Sprintf("%s ~* ?", columndb), value
-	case "sqlserver":
-		//TODO make regexp
-		return fmt.Sprintf("%s LIKE ?", columndb), value
-	default:
-		return fmt.Sprintf("%s ~* ?", columndb), value
-	}
 }
 
 func getFields(rows *sql.Rows) (map[string]interface{}, error) {
@@ -680,9 +604,4 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []JoinData) (
 
 	defer rows.Close()
 	return columnsType, nil
-}
-
-func isNil(val string) bool {
-	valLower := strings.ToLower(val)
-	return valLower == "null" || valLower == "nil" || valLower == "undefined"
 }

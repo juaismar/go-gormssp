@@ -27,7 +27,7 @@ type DialectFunctions struct {
 	/*For configure ddbb*/
 	DBConfig func(*gorm.DB)
 
-	bindingTypesQuery func(string, string, string, *sql.ColumnType, bool, Data) (string, interface{})
+	BindingTypesQuery func(string, string, string, *sql.ColumnType, bool, Data) (string, interface{})
 }
 
 /*
@@ -68,6 +68,80 @@ func checkOrderDialect(column, order string, columnsType []*sql.ColumnType) stri
 func dbConfig(conn *gorm.DB) {
 	if isSQLite(dialect) {
 		conn.Exec("PRAGMA case_sensitive_like = ON;")
+	}
+}
+*/
+
+/*
+
+func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column dialects.Data) (string, interface{}) {
+	var fieldName = columndb
+	if column.Sf != "" { //if implement custom search function
+		fieldName = column.Sf
+	}
+
+	switch clearSearching(searching) {
+	case "string", "TEXT", "varchar", "text":
+		if isRegEx {
+			return regExp(fieldName, value)
+		}
+
+		if column.Cs {
+			if dialect == "sqlserver" {
+				return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS LIKE ?", fieldName), "%" + value + "%"
+			}
+			return fmt.Sprintf("%s LIKE ?", fieldName), "%" + value + "%"
+
+		}
+		return fmt.Sprintf("Lower(%s) LIKE ?", fieldName), "%" + strings.ToLower(value) + "%"
+	case "UUID", "blob":
+		if isRegEx {
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+		}
+		return fmt.Sprintf("%s = ?", fieldName), value
+	case "int":
+		if isRegEx {
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+		}
+		intval, err := strconv.Atoi(value)
+		if err != nil {
+			return "", ""
+		}
+		return fmt.Sprintf("%s = ?", fieldName), intval
+	case "bool", "BOOL", "numeric", "BIT":
+		if isNil(value) {
+			return fieldName, nil
+		}
+		boolval, _ := strconv.ParseBool(value)
+		return fieldName, boolval
+	case "REAL", "NUMERIC", "FLOAT":
+		if isRegEx {
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+		}
+		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
+		float64val, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return "", ""
+		}
+		return fmt.Sprintf("%s = ?", fieldName), float64val
+	default:
+		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
+		return "", ""
+	}
+}
+
+func regExp(columndb, value string) (string, string) {
+	switch dialect {
+	case "sqlite", "sqlite3":
+		//TODO make regexp
+		return fmt.Sprintf("Lower(%s) LIKE ?", columndb), "%" + strings.ToLower(value) + "%"
+	case "postgres":
+		return fmt.Sprintf("%s ~* ?", columndb), value
+	case "sqlserver":
+		//TODO make regexp
+		return fmt.Sprintf("%s LIKE ?", columndb), value
+	default:
+		return fmt.Sprintf("%s ~* ?", columndb), value
 	}
 }
 */
