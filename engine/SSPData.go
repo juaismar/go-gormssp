@@ -18,7 +18,9 @@ func DataSimple(c Controller, conn *gorm.DB,
 	responseJSON.Draw = drawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0))
+	fieldAlias := buildType(table, conn)
+
+	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
@@ -33,7 +35,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 		return
 	}
 
-	responseJSON.Data, err = dataOutput(columns, rows)
+	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
 
 	return
 }
@@ -56,12 +58,12 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	whereResultFlated := Flated(whereResult)
 	whereAllFlated := Flated(whereAll)
 
-	selectQuery, err := buildSelect(table, whereJoin, conn)
+	selectQuery, fieldAlias, err := buildSelectAndType(table, whereJoin, conn)
 	if err != nil {
 		return
 	}
 
-	columnsType, err := initBinding(conn, selectQuery, table, whereJoin)
+	columnsType, err := initBinding(conn, selectQuery, table, whereJoin, fieldAlias)
 	if err != nil {
 		return
 	}
@@ -83,7 +85,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 	defer rows.Close()
 
-	responseJSON.Data, err = dataOutput(columns, rows)
+	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
 	rows.Close()
 
 	return
