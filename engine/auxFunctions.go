@@ -23,14 +23,6 @@ func ParamToBool(c Controller, paramName string) (requestRegex bool) {
 	return
 }
 
-// CheckReserved Skip reserved words
-func CheckReserved(columnName string) string {
-	if isReserved(columnName) {
-		return "\"" + columnName + "\""
-	}
-	return columnName
-}
-
 func isReserved(text string) bool {
 	for _, item := range ReservedWords {
 		if item == strings.ToUpper(text) {

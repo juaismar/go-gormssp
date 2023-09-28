@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -14,18 +13,24 @@ import (
 
 func TheFunctions() *structs.DialectFunctions {
 	return &structs.DialectFunctions{
-		Order:             checkOrder,
-		DBConfig:          dbConfig,
-		BindingTypesQuery: bindingTypesQuery,
-		ParseData:         parseData,
-		ReservedWords:     reservedWords,
+		Order:              checkOrder,
+		DBConfig:           dbConfig,
+		BindingTypesQuery:  bindingTypesQuery,
+		ParseData:          parseData,
+		BindTypes:          bindTypes,
+		ReservedWords:      reservedWords,
+		ParseReservedField: parseReservedField,
+		EscapeChar:         escapeChar,
+		AliasSeparator:     aliasSeparator,
 	}
 }
 
 var reservedWords = []string{}
+var escapeChar = "\""
+var aliasSeparator = "."
 
 // Exported functions
-func checkOrder(column, order string, columnsType []*sql.ColumnType) string {
+func checkOrder(column, order string, columnsType []structs.ColumnType) string {
 	if order == "asc" {
 		return fmt.Sprintf("%s %s", column, "ASC NULLS FIRST")
 	}
@@ -35,7 +40,7 @@ func checkOrder(column, order string, columnsType []*sql.ColumnType) string {
 func dbConfig(_ *gorm.DB) {
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf
@@ -82,12 +87,12 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 		return fmt.Sprintf("%s = ?", fieldName), float64val
 	default:
-		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
+		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.Type)
 		return "", ""
 	}
 }
 
-func parseData(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType) (interface{}, error) {
 	switch clearSearching(searching) {
 	case "string", "TEXT", "varchar", "text":
 		return val.(string), nil
@@ -134,6 +139,14 @@ func parseData(searching, key string, val interface{}, vType reflect.Type) (inte
 		fmt.Printf("(006) GORMSSP New type: %v for key: %v\n", searching, key)
 		return val, nil
 	}
+}
+
+func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
+	return
+}
+
+func parseReservedField(columnName string) string {
+	return "\"" + columnName + "\""
 }
 
 // Auxiliary functions

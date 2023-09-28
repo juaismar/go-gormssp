@@ -1,16 +1,16 @@
-package model
+package db
 
 import (
 	uuid "github.com/satori/go.uuid"
-	"gorm.io/gorm"
 )
 
 // Pet is the model for test
 type Pet struct {
-	gorm.Model
+	CustomModel
 
-	MasterID uuid.UUID
-	Name     string
+	MasterName string
+	MasterID   uuid.UUID `gorm:"type:ARRAY<INT64>"`
+	Name       string
 }
 
 // GetDefaultPet returns data to populate table
@@ -25,28 +25,34 @@ func GetDefaultPet() []Pet {
 
 	return []Pet{
 		{
-			MasterID: uuidJuan,
-			Name:     "Cerverus",
+			MasterName: "Juan",
+			MasterID:   uuidJuan,
+			Name:       "Cerverus",
 		},
 		{
-			MasterID: uuidJuAn,
-			Name:     "Mikey",
+			MasterName: "JuAn",
+			MasterID:   uuidJuAn,
+			Name:       "Mikey",
 		},
 		{
-			MasterID: uuidJoaquin,
-			Name:     "Epona",
+			MasterName: "Joaquin",
+			MasterID:   uuidJoaquin,
+			Name:       "Epona",
 		},
 		{
-			MasterID: uuidEzequiel,
-			Name:     "Shadowfax",
+			MasterName: "Ezequiel",
+			MasterID:   uuidEzequiel,
+			Name:       "Shadowfax",
 		},
 		{
-			MasterID: uuidMarta,
-			Name:     "Rocinante",
+			MasterName: "Marta",
+			MasterID:   uuidMarta,
+			Name:       "Rocinante",
 		},
 		{
-			MasterID: uuidLaura,
-			Name:     "Tweety",
+			MasterName: "Laura",
+			MasterID:   uuidLaura,
+			Name:       "Tweety",
 		},
 	}
 }

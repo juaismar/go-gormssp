@@ -1,4 +1,4 @@
-package ssp_test
+package db_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestSSP(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "SSP Suite")
+	RunSpecs(t, "SSP Postgres Suite")
 }

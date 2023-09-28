@@ -14,18 +14,24 @@ import (
 
 func TheFunctions() *structs.DialectFunctions {
 	return &structs.DialectFunctions{
-		Order:             checkOrder,
-		DBConfig:          dbConfig,
-		BindingTypesQuery: bindingTypesQuery,
-		ParseData:         parseData,
-		ReservedWords:     reservedWords,
+		Order:              checkOrder,
+		DBConfig:           dbConfig,
+		BindingTypesQuery:  bindingTypesQuery,
+		ParseData:          parseData,
+		BindTypes:          bindTypes,
+		ReservedWords:      reservedWords,
+		ParseReservedField: parseReservedField,
+		EscapeChar:         escapeChar,
+		AliasSeparator:     aliasSeparator,
 	}
 }
 
 var reservedWords = []string{}
+var escapeChar = "\""
+var aliasSeparator = "."
 
 // Exported functions
-func checkOrder(column, order string, columnsType []*sql.ColumnType) string {
+func checkOrder(column, order string, columnsType []structs.ColumnType) string {
 	const asc = "ASC NULLS FIRST"
 	const desc = "DESC NULLS LAST"
 
@@ -46,7 +52,7 @@ func dbConfig(conn *gorm.DB) {
 	conn.Exec("PRAGMA case_sensitive_like = ON;")
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf
@@ -93,12 +99,12 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo *sql.Column
 		}
 		return fmt.Sprintf("%s = ?", fieldName), float64val
 	default:
-		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.DatabaseTypeName())
+		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.Type)
 		return "", ""
 	}
 }
 
-func parseData(searching, key string, val interface{}, vType reflect.Type) (interface{}, error) {
+func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType) (interface{}, error) {
 	switch clearSearching(searching) {
 	case "string", "TEXT", "varchar", "text":
 		return val.(string), nil
@@ -147,23 +153,30 @@ func parseData(searching, key string, val interface{}, vType reflect.Type) (inte
 	}
 }
 
+func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
+	return
+}
+
+func parseReservedField(columnName string) string {
+	return "\"" + columnName + "\""
+}
+
 // Auxiliary functions
 
-func isNumeric(column string, columnsType []*sql.ColumnType) bool {
+func isNumeric(column string, columnsType []structs.ColumnType) bool {
 	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
-			searching := columnInfo.DatabaseTypeName()
-			return bindingTypesNumeric(searching, columnInfo)
+		if strings.Replace(column, "\"", "", -1) == columnInfo.ColumnName {
+			return bindingTypesNumeric(columnInfo.Type, columnInfo.SQLColumnType)
 		}
 	}
 
 	return false
 }
-func isDatetime(column string, columnsType []*sql.ColumnType) bool {
+func isDatetime(column string, columnsType []structs.ColumnType) bool {
 	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "\"", "", -1) == columnInfo.Name() {
-			searching := columnInfo.DatabaseTypeName()
-			return searching == "datetime" || searching == "TIMESTAMPTZ" || searching == "DATETIMEOFFSET" || searching == "DATETIME"
+		if strings.Replace(column, "\"", "", -1) == columnInfo.ColumnName {
+			return columnInfo.Type == "datetime" || columnInfo.Type == "TIMESTAMPTZ" ||
+				columnInfo.Type == "DATETIMEOFFSET" || columnInfo.Type == "DATETIME"
 		}
 	}
 

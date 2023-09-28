@@ -1,7 +1,6 @@
 package structs
 
 import (
-	"database/sql"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -9,17 +8,20 @@ import (
 
 type DialectFunctions struct {
 
-	/* Must order properly
+	/* Mandatory
+	Must order properly
 	1 param is column name in ddbb
 	2 param must be "asc" or "desc"
 	3 param is the column type array for check type
 	return a sql string*/
-	Order func(string, string, []*sql.ColumnType) string
+	Order func(string, string, []ColumnType) string
 
-	/*For configure ddbb*/
+	/* Optional - can be empty function
+	For configure ddbb*/
 	DBConfig func(*gorm.DB)
 
-	/*Build a query for a field
+	/* Mandatory
+	Build a query for a field
 	1 the type of field
 	2 the name of field
 	3 value to search
@@ -30,9 +32,10 @@ type DialectFunctions struct {
 	return 1 a query "?" is for search value
 	retrun 2 the search value
 	*/
-	BindingTypesQuery func(string, string, string, *sql.ColumnType, bool, Data) (string, interface{})
+	BindingTypesQuery func(string, string, string, ColumnType, bool, Data) (string, interface{})
 
-	/*Parse a field responded to be return Numbers to int...
+	/* Mandatory
+	Parse a field responded to be return Numbers to int...
 	1 type of field in ddbb
 	2 field name in datatable
 	3 value to be parsed
@@ -41,8 +44,28 @@ type DialectFunctions struct {
 	return parsed value
 	retrun a error to return
 	*/
-	ParseData func(string, string, interface{}, reflect.Type) (interface{}, error)
+	ParseData func(string, string, interface{}, reflect.Type, ColumnType) (interface{}, error)
+
+	/* Optional - can be empty function
+	Get field types
+	1 ddbb
+	2 tablename
+	return [field name , type]*/
+	BindTypes func(*gorm.DB, string) map[string]string
+
+	/* Mandatory
+	Parse a field reserved.
+	1 fieldname
+	return parsed fieldname
+	*/
+	ParseReservedField func(string) string
 
 	/*Words to be scaped*/
 	ReservedWords []string
+
+	/*Character to scape names ej '\"'*/
+	EscapeChar string
+
+	/*Character for separate tableName from FieldName ej "."*/
+	AliasSeparator string
 }
