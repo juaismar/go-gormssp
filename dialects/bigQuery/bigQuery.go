@@ -56,14 +56,12 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		}
 		if isRegEx {
 			return regExp(columnInfo.OriginalName, valueParsed), ""
-			//return fmt.Sprintf("REGEXP_CONTAINS(%s,\"%s\") ", columnInfo.OriginalName, valueParsed), ""
 		}
 
 		return fmt.Sprintf("LOWER(%s) LIKE \"%%%s%%\"", columnInfo.OriginalName, strings.ToLower(valueParsed)), ""
 
 	case "INT64":
 		if isRegEx {
-			//return regExp(columnInfo.OriginalName, valueParsed), ""
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
 		intval, err := strconv.Atoi(value)
@@ -73,7 +71,6 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		return fmt.Sprintf("%s = %d", fieldName, intval), ""
 	case "FLOAT64":
 		if isRegEx {
-			//return regExp(columnInfo.OriginalName, valueParsed), ""
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
 		float64val, err := strconv.ParseFloat(value, 64)
