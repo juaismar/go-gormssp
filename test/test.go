@@ -8,7 +8,7 @@ import (
 	engine "github.com/juaismar/go-gormssp/engine"
 	"github.com/juaismar/go-gormssp/structs"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 )

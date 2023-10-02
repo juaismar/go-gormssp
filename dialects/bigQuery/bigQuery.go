@@ -30,8 +30,13 @@ var aliasSeparator = ":"
 
 // Exported functions
 func checkOrder(column, order string, columnsType []structs.ColumnType) string {
-	if order == "asc" {
-		return fmt.Sprintf("%s %s", column, "ASC NULLS FIRST")
+	for _, columnInfo := range columnsType {
+		if strings.Replace(column, "\"", "", -1) == columnInfo.ColumnName {
+			if order == "asc" {
+				return fmt.Sprintf("%s %s", columnInfo.OriginalName, "ASC NULLS FIRST")
+			}
+			return fmt.Sprintf("%s %s", columnInfo.OriginalName, "DESC NULLS LAST")
+		}
 	}
 	return fmt.Sprintf("%s %s", column, "DESC NULLS LAST")
 }

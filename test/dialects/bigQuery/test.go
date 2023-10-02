@@ -7,7 +7,7 @@ import (
 	ssp "github.com/juaismar/go-gormssp"
 	"github.com/juaismar/go-gormssp/structs"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gorm.io/gorm"
 )
@@ -40,6 +40,7 @@ func Types(db *gorm.DB) {
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
+				mapa["columns[0][orderable]"] = "true"
 
 				mapa["columns[1][data]"] = "1"
 				mapa["columns[1][searchable]"] = "true"
@@ -124,6 +125,7 @@ func Types(db *gorm.DB) {
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
+				mapa["columns[0][orderable]"] = "true"
 
 				mapa["columns[1][data]"] = "1"
 				mapa["columns[1][searchable]"] = "true"
@@ -167,6 +169,7 @@ func Types(db *gorm.DB) {
 
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
+				mapa["columns[0][orderable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
 
 				mapa["columns[1][data]"] = "1"
@@ -188,7 +191,7 @@ func Types(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
-				row["0"] = "Laura"
+				row["0"] = "Joaquin"
 				row["1"] = true
 				testData = append(testData, row)
 				row = make(map[string]interface{})
@@ -196,7 +199,7 @@ func Types(db *gorm.DB) {
 				row["1"] = true
 				testData = append(testData, row)
 				row = make(map[string]interface{})
-				row["0"] = "Joaquin"
+				row["0"] = "Laura"
 				row["1"] = true
 				testData = append(testData, row)
 
@@ -257,6 +260,7 @@ func Types(db *gorm.DB) {
 
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
+				mapa["columns[0][orderable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
 
 				c := ControllerEmulated{Params: mapa}
@@ -274,6 +278,14 @@ func Types(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
+				row["0"] = "Ezequiel"
+				row["1"] = float64(22.11)
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Joaquin"
+				row["1"] = float64(3.4)
+				testData = append(testData, row)
+				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				row["1"] = float64(3.1)
 				testData = append(testData, row)
@@ -282,20 +294,12 @@ func Types(db *gorm.DB) {
 				row["1"] = float64(2.0)
 				testData = append(testData, row)
 				row = make(map[string]interface{})
-				row["0"] = "Ezequiel"
-				row["1"] = float64(22.11)
+				row["0"] = "Laura"
+				row["1"] = float64(0.1)
 				testData = append(testData, row)
 				row = make(map[string]interface{})
 				row["0"] = "Marta"
 				row["1"] = float64(2.0)
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Joaquin"
-				row["1"] = float64(3.4)
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Laura"
-				row["1"] = float64(0.1)
 				testData = append(testData, row)
 				Expect(result.Data).To(Equal(testData))
 			})
@@ -354,6 +358,7 @@ func Types(db *gorm.DB) {
 
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
+				mapa["columns[0][orderable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
 
 				c := ControllerEmulated{Params: mapa}
@@ -371,6 +376,14 @@ func Types(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
+				row["0"] = "Ezequiel"
+				row["1"] = float64(82.14)
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Joaquin"
+				row["1"] = float64(7.18)
+				testData = append(testData, row)
+				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				row["1"] = float64(4.3)
 				testData = append(testData, row)
@@ -379,20 +392,12 @@ func Types(db *gorm.DB) {
 				row["1"] = float64(3.0)
 				testData = append(testData, row)
 				row = make(map[string]interface{})
-				row["0"] = "Ezequiel"
-				row["1"] = float64(82.14)
+				row["0"] = "Laura"
+				row["1"] = float64(22.71)
 				testData = append(testData, row)
 				row = make(map[string]interface{})
 				row["0"] = "Marta"
 				row["1"] = float64(3.0)
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Joaquin"
-				row["1"] = float64(7.18)
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Laura"
-				row["1"] = float64(22.71)
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
@@ -535,6 +540,9 @@ func SimpleFunctionTest(db *gorm.DB) {
 				mapa["order[0][column]"] = "0"
 				mapa["order[0][dir]"] = "asc"
 
+				mapa["columns[0][data]"] = "0"
+				mapa["columns[0][orderable]"] = "true"
+
 				c := ControllerEmulated{Params: mapa}
 
 				columns := []structs.Data{
@@ -549,22 +557,22 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
+				row["0"] = "Ezequiel"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Joaquin"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				testData = append(testData, row)
 				row = make(map[string]interface{})
 				row["0"] = "Juan"
 				testData = append(testData, row)
 				row = make(map[string]interface{})
-				row["0"] = "Ezequiel"
+				row["0"] = "Laura"
 				testData = append(testData, row)
 				row = make(map[string]interface{})
 				row["0"] = "Marta"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Joaquin"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Laura"
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
@@ -580,6 +588,9 @@ func SimpleFunctionTest(db *gorm.DB) {
 				mapa["order[0][column]"] = "0"
 				mapa["order[0][dir]"] = "asc"
 
+				mapa["columns[0][data]"] = "0"
+				mapa["columns[0][orderable]"] = "true"
+
 				c := ControllerEmulated{Params: mapa}
 
 				columns := []structs.Data{
@@ -594,16 +605,16 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
+				row["0"] = "Ezequiel"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Joaquin"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				testData = append(testData, row)
 				row = make(map[string]interface{})
 				row["0"] = "Juan"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Marta"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Ezequiel"
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
@@ -619,6 +630,9 @@ func SimpleFunctionTest(db *gorm.DB) {
 				mapa["order[0][column]"] = "0"
 				mapa["order[0][dir]"] = "asc"
 
+				mapa["columns[0][data]"] = "0"
+				mapa["columns[0][orderable]"] = "true"
+
 				c := ControllerEmulated{Params: mapa}
 
 				columns := []structs.Data{
@@ -633,16 +647,16 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
-				row["0"] = "Juan"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
-				row["0"] = "Marta"
-				testData = append(testData, row)
-				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				testData = append(testData, row)
 				row = make(map[string]interface{})
-				row["0"] = "Ezequiel"
+				row["0"] = "Juan"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Laura"
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Marta"
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
@@ -662,6 +676,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				mapa["columns[0][data]"] = "0"
 				mapa["columns[0][searchable]"] = "true"
+				mapa["columns[0][orderable]"] = "true"
 				mapa["columns[0][search][value]"] = ""
 
 				mapa["columns[1][data]"] = "1"
@@ -688,14 +703,14 @@ func SimpleFunctionTest(db *gorm.DB) {
 
 				testData := make([]interface{}, 0)
 				row := make(map[string]interface{})
-				row["0"] = "Juan"
-				row["1"] = "Tambor"
-				row["2"] = int64(10)
-				testData = append(testData, row)
-				row = make(map[string]interface{})
 				row["0"] = "JuAn"
 				row["1"] = "Trompeta"
 				row["2"] = int64(15)
+				testData = append(testData, row)
+				row = make(map[string]interface{})
+				row["0"] = "Juan"
+				row["1"] = "Tambor"
+				row["2"] = int64(10)
 				testData = append(testData, row)
 
 				Expect(result.Data).To(Equal(testData))
@@ -1234,6 +1249,9 @@ func ComplexFunctionTest(db *gorm.DB) {
 			mapa["order[0][column]"] = "0"
 			mapa["order[0][dir]"] = "asc"
 
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][orderable]"] = "true"
+
 			c := ControllerEmulated{Params: mapa}
 
 			columns := []structs.Data{
@@ -1254,13 +1272,13 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			testData := make([]interface{}, 0)
 			row := make(map[string]interface{})
+			row["0"] = "Joaquin"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
 			row["0"] = "Juan"
 			testData = append(testData, row)
 			row = make(map[string]interface{})
 			row["0"] = "Laura"
-			testData = append(testData, row)
-			row = make(map[string]interface{})
-			row["0"] = "Joaquin"
 			testData = append(testData, row)
 
 			Expect(result.Data).To(Equal(testData))
@@ -1274,6 +1292,9 @@ func ComplexFunctionTest(db *gorm.DB) {
 			mapa["length"] = "5"
 			mapa["order[0][column]"] = "0"
 			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][orderable]"] = "true"
 
 			c := ControllerEmulated{Params: mapa}
 
@@ -1295,13 +1316,13 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			testData := make([]interface{}, 0)
 			row := make(map[string]interface{})
+			row["0"] = "Joaquin"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
 			row["0"] = "Juan"
 			testData = append(testData, row)
 			row = make(map[string]interface{})
 			row["0"] = "Laura"
-			testData = append(testData, row)
-			row = make(map[string]interface{})
-			row["0"] = "Joaquin"
 			testData = append(testData, row)
 
 			Expect(result.Data).To(Equal(testData))
@@ -1316,6 +1337,9 @@ func ComplexFunctionTest(db *gorm.DB) {
 			mapa["length"] = "3"
 			mapa["order[0][column]"] = "0"
 			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][orderable]"] = "true"
 
 			c := ControllerEmulated{Params: mapa}
 
@@ -1345,19 +1369,19 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			testData := make([]interface{}, 0)
 			row := make(map[string]interface{})
-			row["0"] = "Juan"
-			row["1"] = "Cerverus"
-			row["2"] = "Juan"
-			testData = append(testData, row)
-			row = make(map[string]interface{})
-			row["0"] = "Marta"
-			row["1"] = "Rocinante"
-			row["2"] = "Marta"
-			testData = append(testData, row)
-			row = make(map[string]interface{})
 			row["0"] = "Ezequiel"
 			row["1"] = "Shadowfax"
 			row["2"] = "Ezequiel"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "Joaquin"
+			row["1"] = "Epona"
+			row["2"] = "Joaquin"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "JuAn"
+			row["1"] = "Mikey"
+			row["2"] = "JuAn"
 			testData = append(testData, row)
 
 			Expect(result.Data).To(Equal(testData))
@@ -1371,6 +1395,9 @@ func ComplexFunctionTest(db *gorm.DB) {
 			mapa["length"] = "3"
 			mapa["order[0][column]"] = "0"
 			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][orderable]"] = "true"
 
 			c := ControllerEmulated{Params: mapa}
 
@@ -1407,22 +1434,22 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			testData := make([]interface{}, 0)
 			row := make(map[string]interface{})
-			row["0"] = "Juan"
-			row["1"] = "Cerverus"
-			row["2"] = "Juan"
-			row["3"] = "Cerverus"
-			testData = append(testData, row)
-			row = make(map[string]interface{})
 			row["0"] = "Ezequiel"
 			row["1"] = "Shadowfax"
 			row["2"] = "Ezequiel"
 			row["3"] = "Shadowfax"
 			testData = append(testData, row)
 			row = make(map[string]interface{})
-			row["0"] = "Marta"
-			row["1"] = "Rocinante"
-			row["2"] = "Marta"
-			row["3"] = "Rocinante"
+			row["0"] = "Joaquin"
+			row["1"] = "Epona"
+			row["2"] = "Joaquin"
+			row["3"] = "Epona"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "JuAn"
+			row["1"] = "Mikey"
+			row["2"] = "JuAn"
+			row["3"] = "Mikey"
 			testData = append(testData, row)
 
 			Expect(result.Data).To(Equal(testData))

@@ -6,7 +6,7 @@ import (
 	"github.com/juaismar/go-gormssp/test/dialects/bigQuery/db"
 
 	_ "github.com/lib/pq"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 )
 
 // call test for global test, or dbTest for custom test
