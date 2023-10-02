@@ -229,16 +229,16 @@ func Flated(whereArray []string) string {
 
 func buildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (query string, fieldAlias map[string]string, err error) {
 	query = fmt.Sprintf("%s.*", table)
-	if len(join) == 0 {
-		return
-	}
+
 	fieldAlias = make(map[string]string)
 
 	columnsType, err := getSimpleBinding(conn, table)
 	for _, columnInfo := range columnsType {
 		fieldAlias[columnInfo.ColumnName] = myDialectFunction.EscapeChar + columnInfo.ColumnName + myDialectFunction.EscapeChar
 	}
-
+	if len(join) == 0 {
+		return
+	}
 	subQuery, err := addFieldsSelect(table, table, conn, &fieldAlias)
 	query += subQuery
 	for _, tableData := range join {
@@ -588,7 +588,6 @@ func getSimpleBinding(db *gorm.DB, table string) ([]structs.ColumnType, error) {
 }
 
 func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData, fieldAlias map[string]string) ([]structs.ColumnType, error) {
-
 	columnsType, err := defaultBinding(db, selectQuery, table, whereJoin)
 
 	if err != nil {
@@ -616,7 +615,6 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.Joi
 		}
 		types = append(types, ct)
 	}
-
 	return types, nil
 }
 

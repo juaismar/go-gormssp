@@ -14,7 +14,7 @@ func OpenDB() *gorm.DB {
 		panic(err)
 	}
 
-	InitDB(db)
+	//InitDB(db)
 
 	return db
 }
