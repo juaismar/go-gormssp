@@ -16,7 +16,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	myDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn)
 
 	fieldAlias := BuildType(table, conn)
 
@@ -52,7 +52,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	myDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
 	whereResultFlated := Flated(whereResult)

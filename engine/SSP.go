@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var myDialectFunction *structs.DialectFunctions
+var MyDialectFunction *structs.DialectFunctions
 
 // Controller emulate the beego controller
 type Controller interface {
@@ -34,7 +34,7 @@ func Simple(c Controller, conn *gorm.DB,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	myDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn)
 
 	fieldAlias := BuildType(table, conn)
 
@@ -85,7 +85,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	myDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
 	whereResultFlated := Flated(whereResult)
@@ -148,19 +148,19 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 func SelectDialect(conn *gorm.DB) (err error) {
 	switch conn.Dialector.Name() {
 	case "postgres":
-		myDialectFunction = postgres.TheFunctions()
+		MyDialectFunction = postgres.TheFunctions()
 	case "sqlite", "sqlite3":
-		myDialectFunction = sqlite.TheFunctions()
+		MyDialectFunction = sqlite.TheFunctions()
 	case "sqlserver":
-		myDialectFunction = sqlserver.TheFunctions()
+		MyDialectFunction = sqlserver.TheFunctions()
 	case "bigquery":
-		myDialectFunction = bigQuery.TheFunctions()
+		MyDialectFunction = bigQuery.TheFunctions()
 	default:
 		err = fmt.Errorf("Dialect '%s' not fount", conn.Dialector.Name())
 		return
 	}
 
-	ReservedWords = append(ReservedWords, myDialectFunction.ReservedWords...)
+	ReservedWords = append(ReservedWords, MyDialectFunction.ReservedWords...)
 	return
 }
 
@@ -189,7 +189,7 @@ func DataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.Co
 				dt = strconv.Itoa(column.Dt.(int))
 			}
 
-			db := strings.Replace(column.Db, myDialectFunction.EscapeChar, "", -1)
+			db := strings.Replace(column.Db, MyDialectFunction.EscapeChar, "", -1)
 
 			if column.Formatter != nil {
 				var err error
@@ -226,7 +226,7 @@ func buildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (q
 
 	columnsType, err := getSimpleBinding(conn, table)
 	for _, columnInfo := range columnsType {
-		fieldAlias[columnInfo.ColumnName] = myDialectFunction.EscapeChar + columnInfo.ColumnName + myDialectFunction.EscapeChar
+		fieldAlias[columnInfo.ColumnName] = MyDialectFunction.EscapeChar + columnInfo.ColumnName + MyDialectFunction.EscapeChar
 	}
 	if len(join) == 0 {
 		return
@@ -250,7 +250,7 @@ func BuildType(table string, conn *gorm.DB) (fieldAlias map[string]string) {
 
 	columnsType, _ := getSimpleBinding(conn, table)
 	for _, columnInfo := range columnsType {
-		fieldAlias[columnInfo.ColumnName] = myDialectFunction.EscapeChar + columnInfo.ColumnName + myDialectFunction.EscapeChar
+		fieldAlias[columnInfo.ColumnName] = MyDialectFunction.EscapeChar + columnInfo.ColumnName + MyDialectFunction.EscapeChar
 	}
 
 	addFieldsSelect(table, table, conn, &fieldAlias)
@@ -261,15 +261,15 @@ func BuildType(table string, conn *gorm.DB) (fieldAlias map[string]string) {
 func addFieldsSelect(table, alias string, conn *gorm.DB, fieldAlias *map[string]string) (query string, err error) {
 	columnsType, err := getSimpleBinding(conn, table)
 	for _, columnInfo := range columnsType {
-		originalName := myDialectFunction.EscapeChar + alias + myDialectFunction.EscapeChar +
-			"." + myDialectFunction.EscapeChar + columnInfo.ColumnName + myDialectFunction.EscapeChar
+		originalName := MyDialectFunction.EscapeChar + alias + MyDialectFunction.EscapeChar +
+			"." + MyDialectFunction.EscapeChar + columnInfo.ColumnName + MyDialectFunction.EscapeChar
 
-		aliasName := alias + myDialectFunction.AliasSeparator +
+		aliasName := alias + MyDialectFunction.AliasSeparator +
 			columnInfo.ColumnName
 
 		(*fieldAlias)[aliasName] = originalName
 
-		query += ", " + originalName + " AS " + myDialectFunction.EscapeChar + aliasName + myDialectFunction.EscapeChar
+		query += ", " + originalName + " AS " + MyDialectFunction.EscapeChar + aliasName + MyDialectFunction.EscapeChar
 	}
 	return
 }
@@ -419,7 +419,7 @@ func Order(c Controller, columns []structs.Data, columnsType []structs.ColumnTyp
 					columnIdxTittle = fmt.Sprintf("order[%d][dir]", i)
 					requestColumnData = c.GetString(columnIdxTittle)
 
-					query := myDialectFunction.Order(column.Db, requestColumnData, columnsType)
+					query := MyDialectFunction.Order(column.Db, requestColumnData, columnsType)
 
 					db = db.Order(query)
 				} else {
@@ -479,8 +479,8 @@ func Search(column []structs.Data, keyColumnsI string) int {
 func bindingTypes(value string, columnsType []structs.ColumnType, column structs.Data, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
-		if strings.Replace(columndb, myDialectFunction.EscapeChar, "", -1) == columnInfo.ColumnName {
-			return myDialectFunction.BindingTypesQuery(columnInfo.Type,
+		if strings.Replace(columndb, MyDialectFunction.EscapeChar, "", -1) == columnInfo.ColumnName {
+			return MyDialectFunction.BindingTypesQuery(columnInfo.Type,
 				CheckReserved(columndb), value, columnInfo, isRegEx, column)
 		}
 	}
@@ -518,7 +518,7 @@ func getFields(rows *sql.Rows, columnsType []structs.ColumnType) (map[string]int
 		vType := reflect.TypeOf(val)
 		typeColum := FindType(columnsTypeRows[i].Name(), columnsType)
 		searching := columnsTypeRows[i].DatabaseTypeName()
-		value[key], err = myDialectFunction.ParseData(searching, key, val, vType, typeColum)
+		value[key], err = MyDialectFunction.ParseData(searching, key, val, vType, typeColum)
 		if err != nil {
 			return nil, err
 		}
@@ -627,17 +627,17 @@ func DefaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.
 	return rows.ColumnTypes()
 }
 func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (typeReturn map[string]string, err error) {
-	dialectTypes := myDialectFunction.BindTypes(db, table)
+	dialectTypes := MyDialectFunction.BindTypes(db, table)
 	typeReturn = dialectTypes
 
 	for val, dialectType := range dialectTypes {
-		typeReturn[table+myDialectFunction.AliasSeparator+val] = dialectType
+		typeReturn[table+MyDialectFunction.AliasSeparator+val] = dialectType
 	}
 
 	for _, join := range whereJoin {
-		dialectTypes := myDialectFunction.BindTypes(db, join.Table)
+		dialectTypes := MyDialectFunction.BindTypes(db, join.Table)
 		for val, dialectType := range dialectTypes {
-			typeReturn[join.Table+myDialectFunction.AliasSeparator+val] = dialectType
+			typeReturn[join.Table+MyDialectFunction.AliasSeparator+val] = dialectType
 		}
 	}
 
@@ -647,7 +647,7 @@ func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (ty
 // CheckReserved Skip reserved words
 func CheckReserved(columnName string) string {
 	if isReserved(columnName) {
-		return myDialectFunction.ParseReservedField(columnName)
+		return MyDialectFunction.ParseReservedField(columnName)
 	}
 	return columnName
 }
