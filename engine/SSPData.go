@@ -58,7 +58,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	whereResultFlated := Flated(whereResult)
 	whereAllFlated := Flated(whereAll)
 
-	selectQuery, fieldAlias, err := buildSelectAndType(table, whereJoin, conn)
+	selectQuery, fieldAlias, err := BuildSelectAndType(table, whereJoin, conn)
 	if err != nil {
 		return
 	}
@@ -72,7 +72,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 		Where(FilterGlobal(c, columns, columnsType, conn)).
 		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
-			setJoins(whereJoin),
+			SetJoins(whereJoin),
 			Limit(c),
 			Order(c, columns, columnsType)).
 		Where(whereResultFlated).
