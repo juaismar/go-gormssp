@@ -91,7 +91,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResultFlated := Flated(whereResult)
 	whereAllFlated := Flated(whereAll)
 
-	selectQuery, fieldAlias, err := buildSelectAndType(table, whereJoin, conn)
+	selectQuery, fieldAlias, err := BuildSelectAndType(table, whereJoin, conn)
 	if err != nil {
 		return
 	}
@@ -105,7 +105,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 		Where(FilterGlobal(c, columns, columnsType, conn)).
 		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
-			setJoins(whereJoin),
+			SetJoins(whereJoin),
 			Limit(c),
 			Order(c, columns, columnsType)).
 		Where(whereResultFlated).
@@ -128,7 +128,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 		Where(FilterGlobal(c, columns, columnsType, conn)).
 		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
-			setJoins(whereJoin),
+			SetJoins(whereJoin),
 		).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
@@ -139,7 +139,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 
 	err = conn.Table(table).
-		Scopes(setJoins(whereJoin)).
+		Scopes(SetJoins(whereJoin)).
 		Where(whereAllFlated).Count(&responseJSON.RecordsTotal).Error
 
 	return
@@ -219,7 +219,7 @@ func Flated(whereArray []string) string {
 	return query
 }
 
-func buildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (query string, fieldAlias map[string]string, err error) {
+func BuildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (query string, fieldAlias map[string]string, err error) {
 	query = fmt.Sprintf("%s.*", table)
 
 	fieldAlias = make(map[string]string)
@@ -274,7 +274,7 @@ func addFieldsSelect(table, alias string, conn *gorm.DB, fieldAlias *map[string]
 	return
 }
 
-func setJoins(joins []structs.JoinData) func(db *gorm.DB) *gorm.DB {
+func SetJoins(joins []structs.JoinData) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		for _, join := range joins {
 			db = db.Joins(join.Query)
@@ -283,7 +283,7 @@ func setJoins(joins []structs.JoinData) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func setQuery(db *gorm.DB, query, logic string, param interface{}) *gorm.DB {
+func SetQuery(db *gorm.DB, query, logic string, param interface{}) *gorm.DB {
 	if logic == "where" {
 		if param == "" {
 			db = db.Where(query)
@@ -301,12 +301,12 @@ func setQuery(db *gorm.DB, query, logic string, param interface{}) *gorm.DB {
 	return db
 }
 
-func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *gorm.DB {
+func SetGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *gorm.DB {
 	logic := "or"
 	if first {
 		logic = "where"
 	}
-	return setQuery(db, query, logic, param)
+	return SetQuery(db, query, logic, param)
 }
 
 // database func
@@ -339,7 +339,7 @@ func FilterGlobal(c Controller, columns []structs.Data, columnsType []structs.Co
 			if query == "" {
 				continue
 			}
-			db = setGlobalQuery(db, query, param, first)
+			db = SetGlobalQuery(db, query, param, first)
 			first = false
 
 		} else {
@@ -381,7 +381,7 @@ func FilterIndividual(c Controller, columns []structs.Data, columnsType []struct
 			if query == "" {
 				continue
 			}
-			db = setQuery(db, query, "where", param)
+			db = SetQuery(db, query, "where", param)
 
 		} else {
 			if columnIdx < 0 && requestColumn == "true" {
@@ -615,7 +615,7 @@ func DefaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.
 	rows, err := db.Select(selectQuery).
 		Table(table).
 		Scopes(
-			setJoins(whereJoin),
+			SetJoins(whereJoin),
 		).
 		Limit(1).
 		Rows()
