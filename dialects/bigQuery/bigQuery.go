@@ -2,6 +2,7 @@ package bigQuery
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -120,10 +121,10 @@ func parseData(searching, key string, val interface{}, vType reflect.Type, colum
 
 func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
 	types = make(map[string]string)
-	rows, _ := db.Raw("select column_name, data_type " +
-		"from `INFORMATION_SCHEMA.COLUMNS` " +
-		"where table_name = '" + tableName + "' " +
-		"order by ordinal_position").
+	rows, _ := db.Raw("SELECT column_name, data_type " +
+		"FROM `" + os.Getenv("LW_DATASET") + ".INFORMATION_SCHEMA.COLUMNS` " +
+		"WHERE table_name = '" + tableName + "' " +
+		"ORDER BY ordinal_position").
 		Rows()
 
 	for rows.Next() {

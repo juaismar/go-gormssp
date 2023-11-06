@@ -111,6 +111,9 @@ SSP.Data{Db: "name", Dt: 2, Formatter: nil, Sf: "f_unaccent(name)"}
 -This project is based in the PHP version of datatables pagination in https://datatables.net/examples/data_sources/server_side
 -Original file can be found in https://github.com/DataTables/DataTables/blob/master/examples/server_side/scripts/ssp.class.php
 
+## Important
+If you are using Bigquery must set env var LW_DATASET to your dataset
+
 ## Author ✒️
 
 * **Juan Iscar** - (https://github.com/juaismar)
