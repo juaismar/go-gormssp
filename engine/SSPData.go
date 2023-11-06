@@ -10,24 +10,24 @@ func DataSimple(c Controller, conn *gorm.DB,
 	table string,
 	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
-	err = selectDialect(conn)
+	err = SelectDialect(conn)
 	if err != nil {
 		return
 	}
 
-	responseJSON.Draw = drawNumber(c)
+	responseJSON.Draw = DrawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
-	fieldAlias := buildType(table, conn)
+	fieldAlias := BuildType(table, conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
+	columnsType, err := InitBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
-		Scopes(limit(c),
-			order(c, columns, columnsType)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Scopes(Limit(c),
+			Order(c, columns, columnsType)).
 		Table(table).
 		Rows()
 	defer rows.Close()
@@ -35,7 +35,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 		return
 	}
 
-	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
 
 	return
 }
@@ -46,12 +46,12 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	whereAll []string,
 	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
 
-	err = selectDialect(conn)
+	err = SelectDialect(conn)
 	if err != nil {
 		return
 	}
 
-	responseJSON.Draw = drawNumber(c)
+	responseJSON.Draw = DrawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
@@ -63,18 +63,18 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 		return
 	}
 
-	columnsType, err := initBinding(conn, selectQuery, table, whereJoin, fieldAlias)
+	columnsType, err := InitBinding(conn, selectQuery, table, whereJoin, fieldAlias)
 	if err != nil {
 		return
 	}
 
 	rows, err := conn.Select(selectQuery).
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
 			setJoins(whereJoin),
-			limit(c),
-			order(c, columns, columnsType)).
+			Limit(c),
+			Order(c, columns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -85,7 +85,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 	defer rows.Close()
 
-	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
 	rows.Close()
 
 	return

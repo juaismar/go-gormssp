@@ -28,24 +28,24 @@ func Simple(c Controller, conn *gorm.DB,
 	table string,
 	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
-	err = selectDialect(conn)
+	err = SelectDialect(conn)
 	if err != nil {
 		return
 	}
 
-	responseJSON.Draw = drawNumber(c)
+	responseJSON.Draw = DrawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
-	fieldAlias := buildType(table, conn)
+	fieldAlias := BuildType(table, conn)
 
-	columnsType, err := initBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
+	columnsType, err := InitBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
-		Scopes(limit(c),
-			order(c, columns, columnsType)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Scopes(Limit(c),
+			Order(c, columns, columnsType)).
 		Table(table).
 		Rows()
 	defer rows.Close()
@@ -53,15 +53,15 @@ func Simple(c Controller, conn *gorm.DB,
 		return
 	}
 
-	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
 	if err != nil {
 		return
 	}
 
 	//search in DDBB recordsFiltered
 	err = conn.
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Table(table).Count(&responseJSON.RecordsFiltered).Error
 	if err != nil {
 		return
@@ -79,12 +79,12 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereAll []string,
 	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
 
-	err = selectDialect(conn)
+	err = SelectDialect(conn)
 	if err != nil {
 		return
 	}
 
-	responseJSON.Draw = drawNumber(c)
+	responseJSON.Draw = DrawNumber(c)
 	myDialectFunction.DBConfig(conn)
 
 	// Build the SQL query string from the request
@@ -95,19 +95,19 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	if err != nil {
 		return
 	}
-	columnsType, err := initBinding(conn, selectQuery, table, whereJoin, fieldAlias)
+	columnsType, err := InitBinding(conn, selectQuery, table, whereJoin, fieldAlias)
 
 	if err != nil {
 		return
 	}
 
 	rows, err := conn.Select(selectQuery).
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
 			setJoins(whereJoin),
-			limit(c),
-			order(c, columns, columnsType)).
+			Limit(c),
+			Order(c, columns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -118,15 +118,15 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 	defer rows.Close()
 
-	responseJSON.Data, err = dataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
 	rows.Close()
 	if err != nil {
 		return
 	}
 
 	err = conn.
-		Where(filterGlobal(c, columns, columnsType, conn)).
-		Where(filterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, columns, columnsType, conn)).
+		Where(FilterIndividual(c, columns, columnsType, conn)).
 		Scopes(
 			setJoins(whereJoin),
 		).
@@ -145,7 +145,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	return
 }
 
-func selectDialect(conn *gorm.DB) (err error) {
+func SelectDialect(conn *gorm.DB) (err error) {
 	switch conn.Dialector.Name() {
 	case "postgres":
 		myDialectFunction = postgres.TheFunctions()
@@ -164,7 +164,7 @@ func selectDialect(conn *gorm.DB) (err error) {
 	return
 }
 
-func dataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.ColumnType) ([]interface{}, error) {
+func DataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.ColumnType) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 
 	for rows.Next() {
@@ -208,14 +208,6 @@ func dataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.Co
 	return out, nil
 }
 
-func drawNumber(c Controller) int {
-	draw, err := strconv.Atoi(c.GetString("draw"))
-	if err != nil {
-		return 0
-	}
-	return draw
-}
-
 func Flated(whereArray []string) string {
 	query := ""
 	for _, where := range whereArray {
@@ -252,7 +244,7 @@ func buildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (q
 
 	return
 }
-func buildType(table string, conn *gorm.DB) (fieldAlias map[string]string) {
+func BuildType(table string, conn *gorm.DB) (fieldAlias map[string]string) {
 
 	fieldAlias = make(map[string]string)
 
@@ -318,7 +310,7 @@ func setGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 }
 
 // database func
-func filterGlobal(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
+func FilterGlobal(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
 
 	str := c.GetString("search[value]")
 	if str == "" {
@@ -360,7 +352,7 @@ func filterGlobal(c Controller, columns []structs.Data, columnsType []structs.Co
 
 }
 
-func filterIndividual(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
+func FilterIndividual(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
 	// Individual column filtering
 	var i int
 	for i = 0; ; i++ {
@@ -401,7 +393,7 @@ func filterIndividual(c Controller, columns []structs.Data, columnsType []struct
 
 }
 
-func order(c Controller, columns []structs.Data, columnsType []structs.ColumnType) func(db *gorm.DB) *gorm.DB {
+func Order(c Controller, columns []structs.Data, columnsType []structs.ColumnType) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -441,7 +433,7 @@ func order(c Controller, columns []structs.Data, columnsType []structs.ColumnTyp
 	}
 }
 
-func limit(c Controller) func(db *gorm.DB) *gorm.DB {
+func Limit(c Controller) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		start, err := strconv.Atoi(c.GetString("start"))
 		if err != nil || start < 0 {
@@ -524,7 +516,7 @@ func getFields(rows *sql.Rows, columnsType []structs.ColumnType) (map[string]int
 			continue
 		}
 		vType := reflect.TypeOf(val)
-		typeColum := findType(columnsTypeRows[i].Name(), columnsType)
+		typeColum := FindType(columnsTypeRows[i].Name(), columnsType)
 		searching := columnsTypeRows[i].DatabaseTypeName()
 		value[key], err = myDialectFunction.ParseData(searching, key, val, vType, typeColum)
 		if err != nil {
@@ -587,14 +579,14 @@ func getSimpleBinding(db *gorm.DB, table string) ([]structs.ColumnType, error) {
 	return types, nil
 }
 
-func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData, fieldAlias map[string]string) ([]structs.ColumnType, error) {
-	columnsType, err := defaultBinding(db, selectQuery, table, whereJoin)
+func InitBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData, fieldAlias map[string]string) ([]structs.ColumnType, error) {
+	columnsType, err := DefaultBinding(db, selectQuery, table, whereJoin)
 
 	if err != nil {
 		return nil, err
 	}
 
-	columnsTypesByDialect, err := dialectBinding(db, table, whereJoin)
+	columnsTypesByDialect, err := DialectBinding(db, table, whereJoin)
 
 	if err != nil {
 		return nil, err
@@ -618,7 +610,7 @@ func initBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.Joi
 	return types, nil
 }
 
-func defaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData) ([]*sql.ColumnType, error) {
+func DefaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData) ([]*sql.ColumnType, error) {
 	//get bind types
 	rows, err := db.Select(selectQuery).
 		Table(table).
@@ -634,7 +626,7 @@ func defaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.
 
 	return rows.ColumnTypes()
 }
-func dialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (typeReturn map[string]string, err error) {
+func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (typeReturn map[string]string, err error) {
 	dialectTypes := myDialectFunction.BindTypes(db, table)
 	typeReturn = dialectTypes
 
@@ -660,7 +652,7 @@ func CheckReserved(columnName string) string {
 	return columnName
 }
 
-func findType(columnName string, columnsType []structs.ColumnType) structs.ColumnType {
+func FindType(columnName string, columnsType []structs.ColumnType) structs.ColumnType {
 
 	for _, columnType := range columnsType {
 		if columnType.ColumnName == columnName {
