@@ -220,7 +220,7 @@ func Flated(whereArray []string) string {
 }
 
 func BuildSelectAndType(table string, join []structs.JoinData, conn *gorm.DB) (query string, fieldAlias map[string]string, err error) {
-	query = fmt.Sprintf("%s.*", table)
+	query = fmt.Sprintf(MyDialectFunction.EscapeChar+"%s"+MyDialectFunction.EscapeChar+".*", table)
 
 	fieldAlias = make(map[string]string)
 
