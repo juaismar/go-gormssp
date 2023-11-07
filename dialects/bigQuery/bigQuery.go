@@ -75,7 +75,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 			return "", ""
 		}
 		return fmt.Sprintf("%s = %d", fieldName, intval), ""
-	case "FLOAT64":
+	case "FLOAT64", "BIGNUMERIC":
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
