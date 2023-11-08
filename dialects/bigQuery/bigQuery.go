@@ -52,8 +52,8 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		fieldName = column.Sf
 	}
 
-	switch columnInfo.Type {
-	case "STRING":
+	switch {
+	case strings.Contains(columnInfo.Type, "STRING"):
 
 		//prevent SQL injection
 		valueParsed := strings.Replace(value, "'", "\\'", -1)
@@ -66,7 +66,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 
 		return fmt.Sprintf("LOWER(%s) LIKE \"%%%s%%\"", columnInfo.OriginalName, strings.ToLower(valueParsed)), ""
 
-	case "INT64":
+	case strings.Contains(columnInfo.Type, "INT64"):
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
@@ -75,7 +75,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 			return "", ""
 		}
 		return fmt.Sprintf("%s = %d", fieldName, intval), ""
-	case "FLOAT64", "BIGNUMERIC":
+	case strings.Contains(columnInfo.Type, "FLOAT64"), strings.Contains(columnInfo.Type, "BIGNUMERIC"):
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
@@ -84,7 +84,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 			return "", ""
 		}
 		return fmt.Sprintf("%s = %f", fieldName, float64val), ""
-	case "BOOL":
+	case columnInfo.Type == "BOOL":
 		if isNil(value) {
 			return "", ""
 		}
@@ -96,7 +96,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		}
 
 		return fmt.Sprintf("%s = %s", fieldName, searchVal), ""
-	case "ARRAY<INT64>":
+	case columnInfo.Type == "ARRAY<INT64>":
 		return fmt.Sprintf("%s = %s", fieldName, value), ""
 	default:
 		fmt.Printf("(004) GORMSSP New type %v\n", columnInfo.Type)
