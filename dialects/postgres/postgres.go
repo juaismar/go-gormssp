@@ -13,11 +13,11 @@ import (
 
 func TheFunctions() *structs.DialectFunctions {
 	return &structs.DialectFunctions{
-		Order:              checkOrder,
-		DBConfig:           dbConfig,
-		BindingTypesQuery:  bindingTypesQuery,
-		ParseData:          parseData,
-		BindTypes:          bindTypes,
+		Order:             checkOrder,
+		DBConfig:          dbConfig,
+		BindingTypesQuery: bindingTypesQuery,
+		ParseData:         parseData,
+		//BindTypes:          bindTypes,
 		ReservedWords:      reservedWords,
 		ParseReservedField: parseReservedField,
 		EscapeChar:         escapeChar,
@@ -141,9 +141,9 @@ func parseData(searching, key string, val interface{}, vType reflect.Type, colum
 	}
 }
 
-func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
-	return
-}
+//func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
+//	return
+//}
 
 func parseReservedField(columnName string) string {
 	return "\"" + columnName + "\""

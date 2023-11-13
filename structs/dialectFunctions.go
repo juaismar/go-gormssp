@@ -60,12 +60,12 @@ type DialectFunctions struct {
 	*/
 	ParseReservedField func(string) string
 
-	/*Words to be scaped*/
+	/* Optional - Words to be scaped*/
 	ReservedWords []string
 
-	/*Character to scape names ej '\"'*/
+	/* Mandatory - Character to scape names ej '\"'*/
 	EscapeChar string
 
-	/*Character for separate tableName from FieldName ej "."*/
+	/* Mandatory - Character for separate tableName from FieldName ej "."*/
 	AliasSeparator string
 }

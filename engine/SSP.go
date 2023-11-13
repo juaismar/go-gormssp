@@ -580,33 +580,45 @@ func getSimpleBinding(db *gorm.DB, table string) ([]structs.ColumnType, error) {
 }
 
 func InitBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.JoinData, fieldAlias map[string]string) ([]structs.ColumnType, error) {
-	columnsType, err := DefaultBinding(db, selectQuery, table, whereJoin)
 
-	if err != nil {
-		return nil, err
-	}
-
-	columnsTypesByDialect, err := DialectBinding(db, table, whereJoin)
-
-	if err != nil {
-		return nil, err
-	}
-
-	//build binding
+	var err error
 	var types []structs.ColumnType
-	for _, element := range columnsType {
-		var ct structs.ColumnType
-		ct.ColumnName = element.Name()
-		ct.OriginalName = fieldAlias[element.Name()]
 
-		customType, existCustomType := columnsTypesByDialect[element.Name()]
-		if existCustomType {
-			ct.Type = customType
-		} else {
-			ct.Type = element.DatabaseTypeName()
+	if MyDialectFunction.BindTypes != nil {
+
+		var columnsTypesByDialect map[string]string
+		columnsTypesByDialect, err = DialectBinding(db, table, whereJoin)
+		if err != nil {
+			return nil, err
 		}
-		types = append(types, ct)
+
+		for name, customType := range columnsTypesByDialect {
+			var ct structs.ColumnType
+			ct.ColumnName = name
+			ct.OriginalName = fieldAlias[name]
+			ct.Type = customType
+
+			types = append(types, ct)
+		}
+
+	} else {
+		var columnsType []*sql.ColumnType
+		columnsType, err = DefaultBinding(db, selectQuery, table, whereJoin)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, element := range columnsType {
+			var ct structs.ColumnType
+			ct.ColumnName = element.Name()
+			ct.OriginalName = fieldAlias[element.Name()]
+			ct.Type = element.DatabaseTypeName()
+
+			types = append(types, ct)
+		}
 	}
+
 	return types, nil
 }
 
