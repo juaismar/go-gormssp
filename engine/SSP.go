@@ -253,8 +253,6 @@ func BuildType(table string, conn *gorm.DB) (fieldAlias map[string]string) {
 		fieldAlias[columnInfo.ColumnName] = MyDialectFunction.EscapeChar + columnInfo.ColumnName + MyDialectFunction.EscapeChar
 	}
 
-	addFieldsSelect(table, table, conn, &fieldAlias)
-
 	return
 }
 
