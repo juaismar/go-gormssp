@@ -52,7 +52,7 @@ func dbConfig(conn *gorm.DB) {
 	conn.Exec("PRAGMA case_sensitive_like = ON;")
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.Data) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf

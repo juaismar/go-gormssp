@@ -59,10 +59,10 @@ func FunctionsTest() {
 	Describe("search", func() {
 		It("returns -1", func() {
 
-			columns := []structs.Data{
-				{Db: "name", Dt: 0, Formatter: nil},
-				{Db: "role", Dt: "role", Formatter: nil},
-				{Db: "email", Dt: 2, Formatter: nil},
+			columns := []structs.DataParsed{
+				{Data: structs.Data{Db: "name", Dt: 0, Formatter: nil}, ParsedDT: "0"},
+				{Data: structs.Data{Db: "role", Dt: "role", Formatter: nil}, ParsedDT: "role"},
+				{Data: structs.Data{Db: "email", Dt: 2, Formatter: nil}, ParsedDT: "2"},
 			}
 			result := engine.Search(columns, "")
 
@@ -70,10 +70,10 @@ func FunctionsTest() {
 		})
 		It("returns -1", func() {
 
-			columns := []structs.Data{
-				{Db: "name", Dt: 0, Formatter: nil},
-				{Db: "role", Dt: "role", Formatter: nil},
-				{Db: "email", Dt: 2, Formatter: nil},
+			columns := []structs.DataParsed{
+				{Data: structs.Data{Db: "name", Dt: 0, Formatter: nil}, ParsedDT: "0"},
+				{Data: structs.Data{Db: "role", Dt: "role", Formatter: nil}, ParsedDT: "role"},
+				{Data: structs.Data{Db: "email", Dt: 2, Formatter: nil}, ParsedDT: "2"},
 			}
 			result := engine.Search(columns, "instrument")
 
@@ -81,10 +81,10 @@ func FunctionsTest() {
 		})
 		It("returns 1", func() {
 
-			columns := []structs.Data{
-				{Db: "name", Dt: 0, Formatter: nil},
-				{Db: "role", Dt: "role", Formatter: nil},
-				{Db: "email", Dt: 2, Formatter: nil},
+			columns := []structs.DataParsed{
+				{Data: structs.Data{Db: "name", Dt: 0, Formatter: nil}, ParsedDT: "0"},
+				{Data: structs.Data{Db: "role", Dt: "role", Formatter: nil}, ParsedDT: "role"},
+				{Data: structs.Data{Db: "email", Dt: 2, Formatter: nil}, ParsedDT: "2"},
 			}
 			result := engine.Search(columns, "role")
 
@@ -92,10 +92,10 @@ func FunctionsTest() {
 		})
 		It("returns 0", func() {
 
-			columns := []structs.Data{
-				{Db: "name", Dt: 0, Formatter: nil},
-				{Db: "role", Dt: "role", Formatter: nil},
-				{Db: "email", Dt: 2, Formatter: nil},
+			columns := []structs.DataParsed{
+				{Data: structs.Data{Db: "name", Dt: 0, Formatter: nil}, ParsedDT: "0"},
+				{Data: structs.Data{Db: "role", Dt: "role", Formatter: nil}, ParsedDT: "role"},
+				{Data: structs.Data{Db: "email", Dt: 2, Formatter: nil}, ParsedDT: "2"},
 			}
 			result := engine.Search(columns, "0")
 

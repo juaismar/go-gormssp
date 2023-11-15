@@ -10,6 +10,11 @@ func DataSimple(c Controller, conn *gorm.DB,
 	table string,
 	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
+	parsedColumns, err := PreprocessDataColums(columns)
+	if err != nil {
+		return
+	}
+
 	err = SelectDialect(conn)
 	if err != nil {
 		return
@@ -24,10 +29,10 @@ func DataSimple(c Controller, conn *gorm.DB,
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Scopes(Limit(c),
-			Order(c, columns, columnsType)).
+			Order(c, parsedColumns, columnsType)).
 		Table(table).
 		Rows()
 	defer rows.Close()
@@ -35,7 +40,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 		return
 	}
 
-	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(parsedColumns, rows, columnsType)
 
 	return
 }
@@ -45,6 +50,11 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	whereResult []string,
 	whereAll []string,
 	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
+
+	parsedColumns, err := PreprocessDataColums(columns)
+	if err != nil {
+		return
+	}
 
 	err = SelectDialect(conn)
 	if err != nil {
@@ -69,12 +79,12 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 
 	rows, err := conn.Select(selectQuery).
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Scopes(
 			SetJoins(whereJoin),
 			Limit(c),
-			Order(c, columns, columnsType)).
+			Order(c, parsedColumns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -85,7 +95,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 	defer rows.Close()
 
-	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(parsedColumns, rows, columnsType)
 	rows.Close()
 
 	return
