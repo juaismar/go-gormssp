@@ -32,7 +32,7 @@ type DialectFunctions struct {
 	return 1 a query "?" is for search value
 	retrun 2 the search value
 	*/
-	BindingTypesQuery func(string, string, string, ColumnType, bool, Data) (string, interface{})
+	BindingTypesQuery func(string, string, string, ColumnType, bool, DataParsed) (string, interface{})
 
 	/* Mandatory
 	Parse a field responded to be return Numbers to int...

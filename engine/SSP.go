@@ -28,6 +28,11 @@ func Simple(c Controller, conn *gorm.DB,
 	table string,
 	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
 
+	parsedColumns, err := PreprocessDataColums(columns)
+	if err != nil {
+		return
+	}
+
 	err = SelectDialect(conn)
 	if err != nil {
 		return
@@ -42,10 +47,10 @@ func Simple(c Controller, conn *gorm.DB,
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Scopes(Limit(c),
-			Order(c, columns, columnsType)).
+			Order(c, parsedColumns, columnsType)).
 		Table(table).
 		Rows()
 	defer rows.Close()
@@ -53,15 +58,15 @@ func Simple(c Controller, conn *gorm.DB,
 		return
 	}
 
-	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(parsedColumns, rows, columnsType)
 	if err != nil {
 		return
 	}
 
 	//search in DDBB recordsFiltered
 	err = conn.
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Table(table).Count(&responseJSON.RecordsFiltered).Error
 	if err != nil {
 		return
@@ -78,6 +83,11 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
 	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
+
+	parsedColumns, err := PreprocessDataColums(columns)
+	if err != nil {
+		return
+	}
 
 	err = SelectDialect(conn)
 	if err != nil {
@@ -102,12 +112,12 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 
 	rows, err := conn.Select(selectQuery).
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Scopes(
 			SetJoins(whereJoin),
 			Limit(c),
-			Order(c, columns, columnsType)).
+			Order(c, parsedColumns, columnsType)).
 		Where(whereResultFlated).
 		Where(whereAllFlated).
 		Table(table).
@@ -118,15 +128,15 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 	defer rows.Close()
 
-	responseJSON.Data, err = DataOutput(columns, rows, columnsType)
+	responseJSON.Data, err = DataOutput(parsedColumns, rows, columnsType)
 	rows.Close()
 	if err != nil {
 		return
 	}
 
 	err = conn.
-		Where(FilterGlobal(c, columns, columnsType, conn)).
-		Where(FilterIndividual(c, columns, columnsType, conn)).
+		Where(FilterGlobal(c, parsedColumns, columnsType, conn)).
+		Where(FilterIndividual(c, parsedColumns, columnsType, conn)).
 		Scopes(
 			SetJoins(whereJoin),
 		).
@@ -164,7 +174,7 @@ func SelectDialect(conn *gorm.DB) (err error) {
 	return
 }
 
-func DataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.ColumnType) ([]interface{}, error) {
+func DataOutput(columns []structs.DataParsed, rows *sql.Rows, columnsType []structs.ColumnType) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 
 	for rows.Next() {
@@ -177,28 +187,16 @@ func DataOutput(columns []structs.Data, rows *sql.Rows, columnsType []structs.Co
 
 		for j := 0; j < len(columns); j++ {
 			column := columns[j]
-			var dt string
-			if column.Dt == nil {
-				return nil, fmt.Errorf("Dt cannot be nil in column[%v]", j)
-			}
-
-			vType := reflect.TypeOf(column.Dt)
-			if vType.String() == "string" {
-				dt = column.Dt.(string)
-			} else {
-				dt = strconv.Itoa(column.Dt.(int))
-			}
-
 			db := strings.Replace(column.Db, MyDialectFunction.EscapeChar, "", -1)
 
 			if column.Formatter != nil {
 				var err error
-				row[dt], err = column.Formatter(fields[db], fields)
+				row[column.ParsedDT], err = column.Formatter(fields[db], fields)
 				if err != nil {
 					return nil, err
 				}
 			} else {
-				row[dt] = fields[db]
+				row[column.ParsedDT] = fields[db]
 			}
 
 		}
@@ -308,7 +306,7 @@ func SetGlobalQuery(db *gorm.DB, query string, param interface{}, first bool) *g
 }
 
 // database func
-func FilterGlobal(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
+func FilterGlobal(c Controller, columns []structs.DataParsed, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
 
 	str := c.GetString("search[value]")
 	if str == "" {
@@ -350,7 +348,7 @@ func FilterGlobal(c Controller, columns []structs.Data, columnsType []structs.Co
 
 }
 
-func FilterIndividual(c Controller, columns []structs.Data, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
+func FilterIndividual(c Controller, columns []structs.DataParsed, columnsType []structs.ColumnType, db *gorm.DB) *gorm.DB {
 	// Individual column filtering
 	var i int
 	for i = 0; ; i++ {
@@ -391,7 +389,7 @@ func FilterIndividual(c Controller, columns []structs.Data, columnsType []struct
 
 }
 
-func Order(c Controller, columns []structs.Data, columnsType []structs.ColumnType) func(db *gorm.DB) *gorm.DB {
+func Order(c Controller, columns []structs.DataParsed, columnsType []structs.ColumnType) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
 
@@ -451,22 +449,9 @@ func Limit(c Controller) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func Search(column []structs.Data, keyColumnsI string) int {
-	var i int
-	for i = 0; i < len(column); i++ {
-		data := column[i]
-		if data.Dt == nil {
-			continue
-		}
-		var field string
-		vType := reflect.TypeOf(data.Dt)
-		if vType.String() == "string" {
-			field = data.Dt.(string)
-		} else {
-			field = strconv.Itoa(data.Dt.(int))
-		}
-
-		if field == keyColumnsI {
+func Search(columns []structs.DataParsed, keyColumnsI string) int {
+	for i := 0; i < len(columns); i++ {
+		if columns[i].ParsedDT == keyColumnsI {
 			return i
 		}
 	}
@@ -474,7 +459,7 @@ func Search(column []structs.Data, keyColumnsI string) int {
 }
 
 // check if searchable field is string
-func bindingTypes(value string, columnsType []structs.ColumnType, column structs.Data, isRegEx bool) (string, interface{}) {
+func bindingTypes(value string, columnsType []structs.ColumnType, column structs.DataParsed, isRegEx bool) (string, interface{}) {
 	columndb := column.Db
 	for _, columnInfo := range columnsType {
 		if strings.Replace(columndb, MyDialectFunction.EscapeChar, "", -1) == columnInfo.ColumnName {
@@ -670,4 +655,30 @@ func FindType(columnName string, columnsType []structs.ColumnType) structs.Colum
 		}
 	}
 	return columnsType[0]
+}
+
+func PreprocessDataColums(columns []structs.Data) (ResColumns []structs.DataParsed, err error) {
+
+	for i := 0; i < len(columns); i++ {
+		column := columns[i]
+
+		var dt string
+		if column.Dt == nil {
+			return nil, fmt.Errorf("Dt cannot be nil in column[%v]", i)
+		}
+
+		vType := reflect.TypeOf(column.Dt)
+		if vType.String() == "string" {
+			dt = column.Dt.(string)
+		} else {
+			dt = strconv.Itoa(column.Dt.(int))
+		}
+
+		ResColumns = append(ResColumns, structs.DataParsed{
+			Data:     column,
+			ParsedDT: dt,
+		})
+
+	}
+	return
 }
