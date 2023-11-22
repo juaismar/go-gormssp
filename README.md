@@ -56,7 +56,7 @@ func (c *User) Pagination() {
 
   // Send the data to the client
   // "users" is the name of the table
-  c.Data["json"], _ = SSP.Simple(c, model.ORM, "users", columns)
+  c.Data["json"], _ = SSP.Simple(c, model.ORM, "users", columns, nil)
   c.ServeJSON()
 }
 ```
@@ -89,7 +89,7 @@ func (c *User) Pagination() {
     var whereJoin = make([]SSP.JoinData, 0)
     whereAll = append(whereAll, "deleted_at IS NULL")
 
-    c.Data["json"], _ = SSP.Complex(c, model.ORM, "events", columns, whereResult, whereAll, whereJoin)
+    c.Data["json"], _ = SSP.Complex(c, model.ORM, "events", columns, whereResult, whereAll, whereJoin, nil)
     c.ServeJSON()
 }
 ```
