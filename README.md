@@ -56,7 +56,7 @@ func (c *User) Pagination() {
 
   // Send the data to the client
   // "users" is the name of the table
-  c.Data["json"], _ = SSP.Simple(c, model.ORM, "users", columns)
+  c.Data["json"], _ = SSP.Simple(c, model.ORM, "users", columns, nil)
   c.ServeJSON()
 }
 ```
@@ -89,7 +89,7 @@ func (c *User) Pagination() {
     var whereJoin = make([]SSP.JoinData, 0)
     whereAll = append(whereAll, "deleted_at IS NULL")
 
-    c.Data["json"], _ = SSP.Complex(c, model.ORM, "events", columns, whereResult, whereAll, whereJoin)
+    c.Data["json"], _ = SSP.Complex(c, model.ORM, "events", columns, whereResult, whereAll, whereJoin, nil)
     c.ServeJSON()
 }
 ```
@@ -107,6 +107,24 @@ can be implemented as:
 ```
 SSP.Data{Db: "name", Dt: 2, Formatter: nil, Sf: "f_unaccent(name)"}
 ```
+
+Added a new option param to pass data to dialect files.
+in case of bigquery, must pass a info like this
+```
+opt := make(map[string]interface{})
+	var tableInfo = make(map[string]map[string]string)
+
+	tableInfo["users"] = map[string]string{
+		"Dataset":   "prueba",
+		"TableName": "users",
+	}
+	tableInfo["pets"] = map[string]string{
+		"Dataset":   "prueba",
+		"TableName": "pets",
+	}
+
+	opt["TableInfo"] = tableInfo
+  ```
 
 -This project is based in the PHP version of datatables pagination in https://datatables.net/examples/data_sources/server_side
 -Original file can be found in https://github.com/DataTables/DataTables/blob/master/examples/server_side/scripts/ssp.class.php

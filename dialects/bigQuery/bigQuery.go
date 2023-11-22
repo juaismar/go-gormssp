@@ -2,7 +2,6 @@ package bigQuery
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -30,7 +29,8 @@ var escapeChar = "`"
 var aliasSeparator = ":"
 
 // Exported functions
-func checkOrder(column, order string, columnsType []structs.ColumnType) string {
+func checkOrder(column, order string, columnsType []structs.ColumnType,
+	opt map[string]interface{}) string {
 	for _, columnInfo := range columnsType {
 		if strings.Replace(column, "\"", "", -1) == columnInfo.ColumnName {
 			if order == "asc" {
@@ -42,10 +42,11 @@ func checkOrder(column, order string, columnsType []structs.ColumnType) string {
 	return fmt.Sprintf("%s %s", column, "DESC NULLS LAST")
 }
 
-func dbConfig(_ *gorm.DB) {
+func dbConfig(_ *gorm.DB, opt map[string]interface{}) {
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed,
+	opt map[string]interface{}) (string, interface{}) {
 
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
@@ -104,26 +105,19 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 	}
 }
 
-func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType) (interface{}, error) {
-	switch columnInfo.Type {
-	case "STRING":
-		return val.(string), nil
-	case "INT64":
-		return val.(int64), nil
-	case "FLOAT64":
-		return val.(float64), nil
-	case "BOOL":
-		return val.(bool), nil
-	default:
-		return val, nil
-	}
+func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType,
+	opt map[string]interface{}) (interface{}, error) {
+	return val, nil
 }
 
-func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
+func bindTypes(db *gorm.DB, tableName string, opt map[string]interface{}) (types map[string]string) {
 	types = make(map[string]string)
+
+	tableinfo := opt["TableInfo"].(map[string]map[string]string)
+
 	rows, _ := db.Raw("SELECT column_name, data_type " +
-		"FROM `" + os.Getenv("LW_DATASET") + ".INFORMATION_SCHEMA.COLUMNS` " +
-		"WHERE table_name = '" + tableName + "' " +
+		"FROM `" + tableinfo[tableName]["Dataset"] + ".INFORMATION_SCHEMA.COLUMNS` " +
+		"WHERE table_name = '" + tableinfo[tableName]["TableName"] + "' " +
 		"ORDER BY ordinal_position").
 		Rows()
 
@@ -136,7 +130,7 @@ func bindTypes(db *gorm.DB, tableName string) (types map[string]string) {
 	return
 }
 
-func parseReservedField(columnName string) string {
+func parseReservedField(columnName string, opt map[string]interface{}) string {
 	return "`" + columnName + "`"
 }
 

@@ -8,8 +8,10 @@ import (
 // Simple is a main method, externally called, only return Data
 func DataSimple(c Controller, conn *gorm.DB,
 	table string,
-	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
+	columns []structs.Data,
+	opt map[string]interface{}) (responseJSON structs.MessageDataTable, err error) {
 
+	Opt = opt
 	parsedColumns, err := PreprocessDataColums(columns)
 	if err != nil {
 		return
@@ -21,7 +23,7 @@ func DataSimple(c Controller, conn *gorm.DB,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	MyDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn, Opt)
 
 	fieldAlias := BuildType(table, conn)
 
@@ -49,8 +51,10 @@ func DataSimple(c Controller, conn *gorm.DB,
 func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
+	whereJoin []structs.JoinData,
+	opt map[string]interface{}) (responseJSON structs.MessageDataTable, err error) {
 
+	Opt = opt
 	parsedColumns, err := PreprocessDataColums(columns)
 	if err != nil {
 		return
@@ -62,7 +66,7 @@ func DataComplex(c Controller, conn *gorm.DB, table string, columns []structs.Da
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	MyDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn, Opt)
 
 	// Build the SQL query string from the request
 	whereResultFlated := Flated(whereResult)

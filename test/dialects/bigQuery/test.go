@@ -14,6 +14,24 @@ import (
 
 const layoutISO = "2006-01-02"
 
+func generateOpt() map[string]interface{} {
+	opt := make(map[string]interface{})
+	var tableInfo = make(map[string]map[string]string)
+
+	tableInfo["users"] = map[string]string{
+		"Dataset":   "prueba",
+		"TableName": "users",
+	}
+	tableInfo["pets"] = map[string]string{
+		"Dataset":   "prueba",
+		"TableName": "pets",
+	}
+
+	opt["TableInfo"] = tableInfo
+
+	return opt
+}
+
 // ControllerEmulated emulate the beego controller
 type ControllerEmulated struct {
 	Params map[string]string
@@ -52,7 +70,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "age", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
@@ -96,8 +114,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "candies", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -137,8 +154,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "toys", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -182,8 +198,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "fun", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -230,8 +245,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -269,8 +283,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "money", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -328,8 +341,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -367,8 +379,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "bitcoins", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -434,8 +445,7 @@ func Types(db *gorm.DB) {
 						return time, err
 					}},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
@@ -468,8 +478,7 @@ func Types(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "uuid", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -507,8 +516,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "name", Dt: 0, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -548,8 +556,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -596,8 +603,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -638,8 +644,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(63))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -694,8 +699,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "instrument", Dt: 1, Formatter: nil},
 					{Db: "age", Dt: 2, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -740,8 +744,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -786,8 +789,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "instrument", Dt: 1, Formatter: nil},
 				{Db: "age", Dt: 2, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -821,8 +823,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: "supername", Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -867,8 +868,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -908,8 +908,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 					{Db: "name", Dt: 0, Formatter: nil},
 					{Db: "instrument", Dt: 1, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -947,8 +946,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				columns := []structs.Data{
 					{Db: "name", Dt: 0, Cs: true, Formatter: nil},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(64))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -983,8 +981,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 						return fmt.Sprintf("PREFIX_%v_%v", data, row["age"]), nil
 					}},
 				}
-				result, err := ssp.Simple(&c, db, "users", columns)
-
+				result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 				Expect(err).To(BeNil())
 				Expect(result.Draw).To(Equal(62))
 				Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1034,8 +1031,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1080,8 +1076,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "instrument", Dt: 1, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1119,8 +1114,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 			columns := []structs.Data{
 				{Db: "toys", Dt: 0, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1168,8 +1162,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 		columns := []structs.Data{
 			{Db: "birth_date", Dt: 0, Formatter: nil},
 		}
-		result, err := ssp.Simple(&c, db, "users", columns)
-
+		result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 		Expect(err).To(BeNil())
 		Expect(result.Draw).To(Equal(64))
 		Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1218,8 +1211,7 @@ func SimpleFunctionTest(db *gorm.DB) {
 				{Db: "name", Dt: 0, Formatter: nil},
 				{Db: "`Favorite song`", Dt: 1, Formatter: nil},
 			}
-			result, err := ssp.Simple(&c, db, "users", columns)
-
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(64))
 			Expect(result.RecordsTotal).To(Equal(int64(6)))
@@ -1263,7 +1255,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereAll := make([]string, 0)
 			whereAll = append(whereAll, "fun = true")
 
-			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin, generateOpt())
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1307,7 +1299,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 			whereJoin := make([]structs.JoinData, 0)
 			whereAll := make([]string, 0)
 
-			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin, generateOpt())
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1360,7 +1352,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin, generateOpt())
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1425,7 +1417,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin, generateOpt())
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1487,7 +1479,7 @@ func ComplexFunctionTest(db *gorm.DB) {
 
 			whereAll := make([]string, 0)
 
-			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin)
+			result, err := ssp.Complex(&c, db, "users", columns, whereResult, whereAll, whereJoin, generateOpt())
 
 			Expect(err).To(BeNil())
 			Expect(result.Draw).To(Equal(62))
@@ -1502,6 +1494,347 @@ func ComplexFunctionTest(db *gorm.DB) {
 			testData = append(testData, row)
 
 			Expect(result.Data).To(Equal(testData))
+		})
+	})
+}
+
+// Errors test some errors
+func Errors(db *gorm.DB) {
+	Describe("Column not found", func() {
+		It("Return error", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "2"
+			mapa["order[0][column]"] = "1"
+			mapa["order[0][dir]"] = "desc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "bike", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = nil
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = nil
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+	})
+	Describe("Dt is nil", func() {
+		It("Return error", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "2"
+			mapa["order[0][column]"] = "1"
+			mapa["order[0][dir]"] = "desc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "bike", Dt: nil, Formatter: nil},
+			}
+			_, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(fmt.Sprintf("%v", err)).To(Equal("Dt cannot be nil in column[0]"))
+		})
+	})
+	Describe("Format error", func() {
+		It("return name whit prefix and age", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "62"
+			mapa["start"] = "0"
+			mapa["length"] = "4"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: func(
+					data interface{}, row map[string]interface{}) (interface{}, error) {
+					layout := "2006-01-02T15:04:05.000Z"
+					//try convert name to date
+					return time.Parse(layout, data.(string))
+				}},
+			}
+
+			_, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).ToNot(BeNil())
+		})
+	})
+	Describe("Column with reserved word", func() {
+		It("returns 2 Age 15", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][search][value]"] = ""
+
+			mapa["columns[1][data]"] = "1"
+			mapa["columns[1][searchable]"] = "true"
+			mapa["columns[1][search][value]"] = "2"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+				{Db: "end", Dt: 1, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(1)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Joaquin"
+			row["1"] = int64(2)
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+	})
+	Describe("Prevent SQL injection", func() {
+		It("no return error", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][search][value]"] = "Juan`'"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(0)))
+
+			testData := make([]interface{}, 0)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+	})
+}
+
+func RegExpTest(db *gorm.DB) {
+	Describe("RegExp", func() {
+		It("Global search regex", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "1"
+			mapa["order[0][dir]"] = "desc"
+
+			mapa["search[value]"] = "^Eze"
+			mapa["search[regex]"] = "true"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+				{Db: "instrument", Dt: 1, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(1)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Ezequiel"
+			row["1"] = "Trompeta"
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+		It("returns names whit 5 chars (regex)", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][orderable]"] = "true"
+			mapa["columns[0][search][value]"] = "^.{5}$"
+			mapa["columns[0][search][regex]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(2)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Laura"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "Marta"
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+		It("returns names 2 names", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][orderable]"] = "true"
+			mapa["columns[0][search][value]"] = "Marta|Laura"
+			mapa["columns[0][search][regex]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "name", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(2)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = "Laura"
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = "Marta"
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+		It("returns 2 ages int", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][search][value]"] = "13|18"
+			mapa["columns[0][search][regex]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "age", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(2)))
+
+			testData := make([]interface{}, 0)
+			row := make(map[string]interface{})
+			row["0"] = int64(18)
+			testData = append(testData, row)
+			row = make(map[string]interface{})
+			row["0"] = int64(13)
+			testData = append(testData, row)
+
+			Expect(result.Data).To(Equal(testData))
+		})
+		It("returns 2 money float", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][orderable]"] = "true"
+			mapa["columns[0][search][value]"] = "22.11|0.1"
+			mapa["columns[0][search][regex]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "money", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, generateOpt())
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(2)))
+
+			f1 := result.Data[0].(map[string]interface{})["0"].(float64)
+			f2 := result.Data[1].(map[string]interface{})["0"].(float64)
+			Expect(0.09 < f1 && f1 < 0.11).To(BeTrue())
+			Expect(22.109 < f2 && f2 < 22.111).To(BeTrue())
+			Expect(result.Data).To(HaveLen(2))
 		})
 	})
 }
