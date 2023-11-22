@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	test "github.com/juaismar/go-gormssp/test"
 	dbTest "github.com/juaismar/go-gormssp/test/dialects/bigQuery"
 	"github.com/juaismar/go-gormssp/test/dialects/bigQuery/db"
 
@@ -13,8 +12,8 @@ import (
 var _ = Describe("Test BigQuery", func() {
 	db := db.OpenDB()
 	dbTest.ComplexFunctionTest(db)
-	test.RegExpTest(db)
+	dbTest.RegExpTest(db)
 	dbTest.Types(db)
 	dbTest.SimpleFunctionTest(db)
-	test.Errors(db)
+	dbTest.Errors(db)
 })

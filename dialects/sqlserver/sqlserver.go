@@ -31,7 +31,8 @@ var escapeChar = "\""
 var aliasSeparator = "."
 
 // Exported functions
-func checkOrder(column, order string, columnsType []structs.ColumnType) string {
+func checkOrder(column, order string, columnsType []structs.ColumnType,
+	opt map[string]interface{}) string {
 	if isNumeric(column, columnsType) || isDatetime(column, columnsType) {
 		if order == "asc" {
 			return fmt.Sprintf("%s ASC", column)
@@ -46,10 +47,11 @@ func checkOrder(column, order string, columnsType []structs.ColumnType) string {
 	return fmt.Sprintf("%s COLLATE SQL_Latin1_General_Cp1_CS_AS DESC", column)
 }
 
-func dbConfig(_ *gorm.DB) {
+func dbConfig(_ *gorm.DB, opt map[string]interface{}) {
 }
 
-func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed) (string, interface{}) {
+func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed,
+	opt map[string]interface{}) (string, interface{}) {
 	var fieldName = columndb
 	if column.Sf != "" { //if implement custom search function
 		fieldName = column.Sf
@@ -101,7 +103,8 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 	}
 }
 
-func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType) (interface{}, error) {
+func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType,
+	opt map[string]interface{}) (interface{}, error) {
 	switch clearSearching(searching) {
 	case "string", "TEXT", "varchar", "text":
 		return val.(string), nil
@@ -154,7 +157,7 @@ func parseData(searching, key string, val interface{}, vType reflect.Type, colum
 //	return
 //}
 
-func parseReservedField(columnName string) string {
+func parseReservedField(columnName string, opt map[string]interface{}) string {
 	return "\"" + columnName + "\""
 }
 

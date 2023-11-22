@@ -17,6 +17,7 @@ import (
 )
 
 var MyDialectFunction *structs.DialectFunctions
+var Opt map[string]interface{}
 
 // Controller emulate the beego controller
 type Controller interface {
@@ -25,8 +26,10 @@ type Controller interface {
 
 // Simple is a main method, externally called
 func Simple(c Controller, conn *gorm.DB,
-	table string,
-	columns []structs.Data) (responseJSON structs.MessageDataTable, err error) {
+	table string, columns []structs.Data,
+	opt map[string]interface{}) (responseJSON structs.MessageDataTable, err error) {
+
+	Opt = opt
 
 	parsedColumns, err := PreprocessDataColums(columns)
 	if err != nil {
@@ -39,7 +42,7 @@ func Simple(c Controller, conn *gorm.DB,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	MyDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn, Opt)
 
 	fieldAlias := BuildType(table, conn)
 
@@ -82,8 +85,10 @@ func Simple(c Controller, conn *gorm.DB,
 func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	whereResult []string,
 	whereAll []string,
-	whereJoin []structs.JoinData) (responseJSON structs.MessageDataTable, err error) {
+	whereJoin []structs.JoinData,
+	opt map[string]interface{}) (responseJSON structs.MessageDataTable, err error) {
 
+	Opt = opt
 	parsedColumns, err := PreprocessDataColums(columns)
 	if err != nil {
 		return
@@ -95,7 +100,7 @@ func Complex(c Controller, conn *gorm.DB, table string, columns []structs.Data,
 	}
 
 	responseJSON.Draw = DrawNumber(c)
-	MyDialectFunction.DBConfig(conn)
+	MyDialectFunction.DBConfig(conn, Opt)
 
 	// Build the SQL query string from the request
 	whereResultFlated := Flated(whereResult)
@@ -415,7 +420,7 @@ func Order(c Controller, columns []structs.DataParsed, columnsType []structs.Col
 					columnIdxTittle = fmt.Sprintf("order[%d][dir]", i)
 					requestColumnData = c.GetString(columnIdxTittle)
 
-					query := MyDialectFunction.Order(column.Db, requestColumnData, columnsType)
+					query := MyDialectFunction.Order(column.Db, requestColumnData, columnsType, Opt)
 
 					db = db.Order(query)
 				} else {
@@ -464,7 +469,7 @@ func bindingTypes(value string, columnsType []structs.ColumnType, column structs
 	for _, columnInfo := range columnsType {
 		if strings.Replace(columndb, MyDialectFunction.EscapeChar, "", -1) == columnInfo.ColumnName {
 			return MyDialectFunction.BindingTypesQuery(columnInfo.Type,
-				CheckReserved(columndb), value, columnInfo, isRegEx, column)
+				CheckReserved(columndb), value, columnInfo, isRegEx, column, Opt)
 		}
 	}
 
@@ -501,7 +506,7 @@ func getFields(rows *sql.Rows, columnsType []structs.ColumnType) (map[string]int
 		vType := reflect.TypeOf(val)
 		typeColum := FindType(columnsTypeRows[i].Name(), columnsType)
 		searching := columnsTypeRows[i].DatabaseTypeName()
-		value[key], err = MyDialectFunction.ParseData(searching, key, val, vType, typeColum)
+		value[key], err = MyDialectFunction.ParseData(searching, key, val, vType, typeColum, Opt)
 		if err != nil {
 			return nil, err
 		}
@@ -622,7 +627,7 @@ func DefaultBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.
 	return rows.ColumnTypes()
 }
 func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (typeReturn map[string]string, err error) {
-	dialectTypes := MyDialectFunction.BindTypes(db, table)
+	dialectTypes := MyDialectFunction.BindTypes(db, table, Opt)
 	typeReturn = dialectTypes
 
 	for val, dialectType := range dialectTypes {
@@ -630,7 +635,7 @@ func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (ty
 	}
 
 	for _, join := range whereJoin {
-		dialectTypes := MyDialectFunction.BindTypes(db, join.Table)
+		dialectTypes := MyDialectFunction.BindTypes(db, join.Table, Opt)
 		for val, dialectType := range dialectTypes {
 			typeReturn[join.Table+MyDialectFunction.AliasSeparator+val] = dialectType
 		}
@@ -642,7 +647,7 @@ func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (ty
 // CheckReserved Skip reserved words
 func CheckReserved(columnName string) string {
 	if isReserved(columnName) {
-		return MyDialectFunction.ParseReservedField(columnName)
+		return MyDialectFunction.ParseReservedField(columnName, Opt)
 	}
 	return columnName
 }
