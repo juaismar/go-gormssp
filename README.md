@@ -124,7 +124,13 @@ opt := make(map[string]interface{})
 	}
 
 	opt["TableInfo"] = tableInfo
-  ```
+```
+Functions added when you have a custom code that only want data:
+DataSimple
+DataComplex
+ReaderSimple
+ReaderComplex
+
 
 -This project is based in the PHP version of datatables pagination in https://datatables.net/examples/data_sources/server_side
 -Original file can be found in https://github.com/DataTables/DataTables/blob/master/examples/server_side/scripts/ssp.class.php
