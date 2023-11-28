@@ -10,6 +10,8 @@ var Simple = engine.Simple
 var Complex = engine.Complex
 var DataSimple = engine.DataSimple
 var DataComplex = engine.DataComplex
+var ReaderSimple = engine.ReaderSimple
+var ReaderComplex = engine.ReaderComplex
 
 // Models exported.
 type JoinData = structs.JoinData
