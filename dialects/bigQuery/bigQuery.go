@@ -32,7 +32,7 @@ var aliasSeparator = ":"
 func checkOrder(column, order string, columnsType []structs.ColumnType,
 	opt map[string]interface{}) string {
 	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "\"", "", -1) == columnInfo.ColumnName {
+		if strings.Replace(column, "`", "", -1) == columnInfo.ColumnName {
 			if order == "asc" {
 				return fmt.Sprintf("%s %s", columnInfo.OriginalName, "ASC NULLS FIRST")
 			}
