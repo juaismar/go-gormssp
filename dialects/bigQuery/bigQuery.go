@@ -31,8 +31,9 @@ var aliasSeparator = ":"
 // Exported functions
 func checkOrder(column, order string, columnsType []structs.ColumnType,
 	opt map[string]interface{}) string {
+	columnClean := strings.Replace(column, "`", "", -1)
 	for _, columnInfo := range columnsType {
-		if strings.Replace(column, "`", "", -1) == columnInfo.ColumnName {
+		if columnClean == columnInfo.ColumnName {
 			if order == "asc" {
 				return fmt.Sprintf("%s %s", columnInfo.OriginalName, "ASC NULLS FIRST")
 			}
