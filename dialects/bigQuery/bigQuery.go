@@ -2,6 +2,7 @@ package bigQuery
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 	"strconv"
 	"strings"
@@ -107,6 +108,11 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 
 func parseData(searching, key string, val interface{}, vType reflect.Type, columnInfo structs.ColumnType,
 	opt map[string]interface{}) (interface{}, error) {
+	switch v := val.(type) {
+	case *big.Rat:
+		ret, _ := v.Float64()
+		return ret, nil
+	}
 	return val, nil
 }
 
