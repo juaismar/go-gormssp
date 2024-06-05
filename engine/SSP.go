@@ -47,6 +47,9 @@ func Simple(c Controller, conn *gorm.DB,
 	fieldAlias := BuildType(table, conn)
 
 	columnsType, err := InitBinding(conn, "*", table, make([]structs.JoinData, 0), fieldAlias)
+	if err != nil {
+		return
+	}
 
 	// Build the SQL query string from the request
 	rows, err := conn.Select("*").
