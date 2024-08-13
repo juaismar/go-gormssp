@@ -185,6 +185,10 @@ func SelectDialect(conn *gorm.DB) (err error) {
 func DataOutput(columns []structs.DataParsed, rows *sql.Rows, columnsType []structs.ColumnType) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 
+	if len(columnsType) < 1 {
+		return nil, fmt.Errorf("columnsType en DataOutput es menor que 1 (posible fallo de red)")
+	}
+
 	for rows.Next() {
 		fields, err := getFields(rows, columnsType)
 		if err != nil {
@@ -610,6 +614,10 @@ func InitBinding(db *gorm.DB, selectQuery, table string, whereJoin []structs.Joi
 		}
 	}
 
+	if len(types) < 1 {
+		return types, fmt.Errorf("types de InitBinding no ha sido poblado")
+	}
+
 	return types, nil
 }
 
@@ -644,7 +652,7 @@ func DialectBinding(db *gorm.DB, table string, whereJoin []structs.JoinData) (ty
 		}
 	}
 
-	return dialectTypes, nil
+	return typeReturn, nil
 }
 
 // CheckReserved Skip reserved words
