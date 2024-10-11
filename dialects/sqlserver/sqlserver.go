@@ -53,8 +53,14 @@ func dbConfig(_ *gorm.DB, opt map[string]interface{}) {
 func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed,
 	opt map[string]interface{}) (string, interface{}) {
 	var fieldName = columndb
-	if column.Sf != "" { //if implement custom search function
-		fieldName = column.Sf
+
+	if column.Opt != nil {
+		SfField := column.Opt["SearchFunctionField"].(string)
+
+		if SfField != "" { //if implement custom search function
+			fieldName = "(" + SfField + "(" + fieldName + "))"
+		}
+
 	}
 
 	switch clearSearching(searching) {

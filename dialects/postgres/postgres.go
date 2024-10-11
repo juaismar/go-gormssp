@@ -44,8 +44,15 @@ func dbConfig(_ *gorm.DB, opt map[string]interface{}) {
 func bindingTypesQuery(searching, columndb, value string, columnInfo structs.ColumnType, isRegEx bool, column structs.DataParsed,
 	opt map[string]interface{}) (string, interface{}) {
 	var fieldName = columndb
-	if column.Sf != "" { //if implement custom search function
-		fieldName = column.Sf
+	SfValue := ""
+	if column.Opt != nil {
+		SfValue = column.Opt["SearchFunctionValue"].(string)
+		SfField := column.Opt["SearchFunctionField"].(string)
+
+		if SfField != "" { //if implement custom search function
+			fieldName = "(" + SfField + "(" + fieldName + "))"
+		}
+
 	}
 
 	switch clearSearching(searching) {
@@ -55,35 +62,52 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		}
 
 		if column.Cs {
-			return fmt.Sprintf("%s LIKE ?", fieldName), "%" + value + "%"
+			parsedValue := "%" + value + "%"
+			implementSearchFunctionValue(SfValue, &parsedValue)
+
+			return fmt.Sprintf("%s LIKE ?", fieldName), parsedValue
 		}
-		return fmt.Sprintf("Lower(%s) LIKE ?", fieldName), "%" + strings.ToLower(value) + "%"
+		parsedValue := "%" + strings.ToLower(value) + "%"
+		implementSearchFunctionValue(SfValue, &parsedValue)
+		return fmt.Sprintf("Lower(%s) LIKE ?", fieldName), parsedValue
 	case "UUID", "blob":
+		parsedValue := value
+		implementSearchFunctionValue(SfValue, &parsedValue)
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), parsedValue)
 		}
-		return fmt.Sprintf("%s = ?", fieldName), value
+		return fmt.Sprintf("%s = ?", fieldName), parsedValue
 	case "int":
+		parsedValue := value
+		implementSearchFunctionValue(SfValue, &parsedValue)
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), parsedValue)
 		}
-		intval, err := strconv.Atoi(value)
+		intval, err := strconv.Atoi(parsedValue)
 		if err != nil {
 			return "", ""
 		}
+
 		return fmt.Sprintf("%s = ?", fieldName), intval
 	case "bool", "BOOL", "numeric", "BIT":
-		if isNil(value) {
+
+		parsedValue := value
+		implementSearchFunctionValue(SfValue, &parsedValue)
+		if isNil(parsedValue) {
 			return fieldName, nil
 		}
 		boolval, _ := strconv.ParseBool(value)
 		return fieldName, boolval
 	case "REAL", "NUMERIC", "FLOAT":
+
+		parsedValue := value
+		implementSearchFunctionValue(SfValue, &parsedValue)
 		if isRegEx {
-			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), value)
+			return regExp(fmt.Sprintf("CAST(%s AS TEXT)", fieldName), parsedValue)
 		}
 		fmt.Print("(005) GORMSSP WARNING: Serarching float values, float cannot be exactly equal\n")
-		float64val, err := strconv.ParseFloat(value, 64)
+		float64val, err := strconv.ParseFloat(parsedValue, 64)
 		if err != nil {
 			return "", ""
 		}
@@ -174,4 +198,11 @@ func regExp(columndb, value string) (string, string) {
 func isNil(val string) bool {
 	valLower := strings.ToLower(val)
 	return valLower == "null" || valLower == "nil" || valLower == "undefined"
+}
+
+func implementSearchFunctionValue(searchFunction string, value *string) {
+	if searchFunction == "" {
+		return
+	}
+	*value = "(" + searchFunction + "(" + *value + "%))"
 }
