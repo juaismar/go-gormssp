@@ -2,6 +2,7 @@ package bigQuery
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -118,7 +119,16 @@ func parseData(searching, key string, val interface{}, vType reflect.Type, colum
 	switch v := val.(type) {
 	case *big.Rat:
 		ret, _ := v.Float64()
+		if math.IsNaN(ret) {
+			return 0, nil
+		}
 		return ret, nil
+	case float64:
+		if math.IsNaN(float64(v)) {
+			return 0, nil
+		}
+
+		return val, nil
 	}
 	return val, nil
 }
