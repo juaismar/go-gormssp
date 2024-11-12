@@ -545,6 +545,39 @@ func RegExpTest(db *gorm.DB) {
 			Expect(22.109 < f2 && f2 < 22.111).To(BeTrue())
 			Expect(result.Data).To(HaveLen(2))
 		})
+		It("returns 2 money float", func() {
+
+			mapa := make(map[string]string)
+			mapa["draw"] = "64"
+			mapa["start"] = "0"
+			mapa["length"] = "10"
+			mapa["order[0][column]"] = "0"
+			mapa["order[0][dir]"] = "asc"
+
+			mapa["columns[0][data]"] = "0"
+			mapa["columns[0][searchable]"] = "true"
+			mapa["columns[0][orderable]"] = "true"
+			mapa["columns[0][search][value]"] = "22,11|0,1"
+			mapa["columns[0][search][regex]"] = "true"
+
+			c := ControllerEmulated{Params: mapa}
+
+			columns := []structs.Data{
+				{Db: "money", Dt: 0, Formatter: nil},
+			}
+			result, err := ssp.Simple(&c, db, "users", columns, nil)
+
+			Expect(err).To(BeNil())
+			Expect(result.Draw).To(Equal(64))
+			Expect(result.RecordsTotal).To(Equal(int64(6)))
+			Expect(result.RecordsFiltered).To(Equal(int64(2)))
+
+			f1 := result.Data[0].(map[string]interface{})["0"].(float64)
+			f2 := result.Data[1].(map[string]interface{})["0"].(float64)
+			Expect(0.09 < f1 && f1 < 0.11).To(BeTrue())
+			Expect(22.109 < f2 && f2 < 22.111).To(BeTrue())
+			Expect(result.Data).To(HaveLen(2))
+		})
 	})
 }
 

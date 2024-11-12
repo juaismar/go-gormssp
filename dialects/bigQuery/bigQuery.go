@@ -82,7 +82,7 @@ func bindingTypesQuery(searching, columndb, value string, columnInfo structs.Col
 		if isRegEx {
 			return regExp(fmt.Sprintf("CAST(%s AS STRING)", fieldName), value), ""
 		}
-		float64val, err := strconv.ParseFloat(value, 64)
+		float64val, err := strconv.ParseFloat(strings.Replace(value, ",", ".", -1), 64)
 		if err != nil {
 			return "", ""
 		}
